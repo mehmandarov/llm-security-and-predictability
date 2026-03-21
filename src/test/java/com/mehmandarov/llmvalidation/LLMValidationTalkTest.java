@@ -6,8 +6,8 @@ import com.mehmandarov.llmvalidation.chapter1_basics.SimpleInvoiceExtractor;
 import com.mehmandarov.llmvalidation.chapter2_guardrails.SecureInvoiceExtractor;
 import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
 import com.mehmandarov.llmvalidation.chapter4_correction.CorrectiveExtractor;
-import com.mehmandarov.llmvalidation.chapter5_consensus.ConsensusManager;
-import com.mehmandarov.llmvalidation.consensus.MultiModelConsensus.ConsensusResult;
+import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
+import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
@@ -210,14 +210,14 @@ class LLMValidationTalkTest {
         ChatModel model2 = mockChatModel(majorityJson);
         ChatModel model3 = mockChatModel(outlierJson);
 
-        ConsensusManager manager = new ConsensusManager(List.of(model1, model2, model3));
+        MultiModelConsensus consensus = new MultiModelConsensus(List.of(model1, model2, model3));
 
         // Act
-        ConsensusResult consensus = manager.runConsensus(InvoiceTestData.MESSY_OCR);
+        ConsensusResult result = consensus.runConsensus(InvoiceTestData.MESSY_OCR);
 
         // Assert — majority wins
-        assertThat(consensus.isHighConfidence()).isTrue();
-        assertThat(consensus.consensus().amount()).isEqualByComparingTo("1200.00");
+        assertThat(result.isHighConfidence()).isTrue();
+        assertThat(result.consensus().amount()).isEqualByComparingTo("1200.00");
     }
 
     private ChatModel mockChatModel(String json) {

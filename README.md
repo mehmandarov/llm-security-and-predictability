@@ -56,7 +56,7 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
     *   `CorrectiveExtractor.java`: Feeds validation errors back to the LLM for a second attempt.
     *   *Lesson:* Turn runtime exceptions into successful transactions.
 *   **Chapter 5: The Council (Consensus)**
-    *   `ConsensusManager.java`: Aggregates results from multiple models (e.g., GPT-4, Claude, Mistral) to ensure accuracy.
+    *   `MultiModelConsensus.java`: Queries multiple models and uses majority voting to ensure accuracy.
     *   *Lesson:* Democracy for AI reduces individual model bias/error.
 
 ## Key Technologies

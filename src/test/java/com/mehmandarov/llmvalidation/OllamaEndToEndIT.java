@@ -5,8 +5,8 @@ import com.mehmandarov.llmvalidation.chapter2_guardrails.PiiGuardrail;
 import com.mehmandarov.llmvalidation.chapter2_guardrails.PromptInjectionGuardrail;
 import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
 import com.mehmandarov.llmvalidation.chapter4_correction.CorrectiveExtractor;
-import com.mehmandarov.llmvalidation.chapter5_consensus.ConsensusManager;
-import com.mehmandarov.llmvalidation.consensus.MultiModelConsensus.ConsensusResult;
+import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
+import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
 import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import com.mehmandarov.llmvalidation.model.ValidationResult;
@@ -216,9 +216,9 @@ class OllamaEndToEndIT {
         ChatModel wild = OllamaChatModel.builder()
                 .baseUrl(OLLAMA_URL).modelName(MODEL).temperature(1.0).timeout(TIMEOUT).build();
 
-        ConsensusManager manager = new ConsensusManager(List.of(deterministic, creative, wild));
+        MultiModelConsensus consensus = new MultiModelConsensus(List.of(deterministic, creative, wild));
 
-        ConsensusResult result = manager.runConsensus(InvoiceTestData.CLEAN_INVOICE);
+        ConsensusResult result = consensus.runConsensus(InvoiceTestData.CLEAN_INVOICE);
 
         log.info("🗳️ Consensus result: highConfidence={}, confidence={}%",
                 result.isHighConfidence(), (int) (result.confidence() * 100));

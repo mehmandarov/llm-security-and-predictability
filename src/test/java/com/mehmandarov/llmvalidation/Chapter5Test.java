@@ -1,7 +1,7 @@
 package com.mehmandarov.llmvalidation;
 
-import com.mehmandarov.llmvalidation.consensus.MultiModelConsensus.ConsensusResult;
-import com.mehmandarov.llmvalidation.chapter5_consensus.ConsensusManager;
+import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
+import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.model.chat.ChatModel;
@@ -36,10 +36,10 @@ class Chapter5Test {
         ChatModel model2 = mockModel("Llama", goodJson);
         ChatModel model3 = mockModel("Mistral", badJson);
 
-        ConsensusManager manager = new ConsensusManager(List.of(model1, model2, model3));
+        MultiModelConsensus consensus = new MultiModelConsensus(List.of(model1, model2, model3));
 
         // Act
-        ConsensusResult result = manager.runConsensus(InvoiceTestData.MESSY_OCR);
+        ConsensusResult result = consensus.runConsensus(InvoiceTestData.MESSY_OCR);
 
         // Assert
         assertThat(result.isHighConfidence()).isTrue();
@@ -62,10 +62,10 @@ class Chapter5Test {
             { "invoiceNumber": "INV-001", "date": "2024-03-21", "amount": 300.00, "currency": "USD" }
             """);
 
-        ConsensusManager manager = new ConsensusManager(List.of(model1, model2, model3));
+        MultiModelConsensus consensus = new MultiModelConsensus(List.of(model1, model2, model3));
 
         // Act
-        ConsensusResult result = manager.runConsensus(InvoiceTestData.MESSY_OCR);
+        ConsensusResult result = consensus.runConsensus(InvoiceTestData.MESSY_OCR);
 
         // Assert — no majority, confidence is only 1/3 ≈ 0.33
         assertThat(result.isHighConfidence()).isFalse();

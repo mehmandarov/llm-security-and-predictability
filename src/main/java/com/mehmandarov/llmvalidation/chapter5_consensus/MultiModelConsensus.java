@@ -1,4 +1,4 @@
-package com.mehmandarov.llmvalidation.consensus;
+package com.mehmandarov.llmvalidation.chapter5_consensus;
 
 import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import dev.langchain4j.model.chat.ChatModel;
@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Multi-model consensus engine.
+ * Chapter 5: The Council (Consensus).
  * Queries multiple LLM models with the same prompt and uses majority voting
  * to determine the most likely correct answer.
  */
@@ -25,10 +25,12 @@ public class MultiModelConsensus {
     }
 
     /**
-     * Asks each model to extract invoice data, then votes on the result.
-     * Fields are voted on independently (invoice number, amount, etc.).
+     * Asks each model to extract invoice data, votes on the result,
+     * and logs a summary.
      */
-    public ConsensusResult extractWithConsensus(String text) {
+    public ConsensusResult runConsensus(String text) {
+        log.info("🗳️ Starting consensus vote with {} models...", models.size());
+
         List<ExtractedInvoice> results = new ArrayList<>();
 
         for (int i = 0; i < models.size(); i++) {
@@ -45,6 +47,7 @@ public class MultiModelConsensus {
         }
 
         if (results.isEmpty()) {
+            log.warn("⚠️ ALL MODELS FAILED. No consensus possible.");
             return new ConsensusResult(false, null, 0.0);
         }
 
@@ -64,15 +67,30 @@ public class MultiModelConsensus {
 
         ExtractedInvoice consensus = new ExtractedInvoice(
                 invoiceNumber,
-                results.getFirst().date(), // use first non-null date
+                results.getFirst().date(),
                 amount,
                 currency,
                 null,
                 Collections.emptyList()
         );
 
-        return new ConsensusResult(confidence >= 0.6, consensus, confidence);
+        ConsensusResult result = new ConsensusResult(confidence >= 0.6, consensus, confidence);
+
+        // Log summary
+        if (result.isHighConfidence()) {
+            log.info("✅ HIGH CONFIDENCE CONSENSUS REACHED!");
+            log.info("   Invoice: {}", result.consensus().invoiceNumber());
+            log.info("   Amount:  {}", result.consensus().amount());
+            log.info("   Score:   {}%", (int)(result.confidence() * 100));
+        } else {
+            log.warn("⚠️ LOW CONFIDENCE. Manual review required.");
+            log.warn("   Score:   {}%", (int)(result.confidence() * 100));
+        }
+
+        return result;
     }
+
+    // ...existing code... (extractFromModel, majorityVote, majorityVoteAmount, SimpleExtractor, ConsensusResult)
 
     private ExtractedInvoice extractFromModel(ChatModel model, String text) {
         // Use AiServices to get structured output from each model
@@ -111,3 +129,4 @@ public class MultiModelConsensus {
 
     public record ConsensusResult(boolean isHighConfidence, ExtractedInvoice consensus, double confidence) {}
 }
+
