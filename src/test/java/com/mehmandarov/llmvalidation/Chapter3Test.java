@@ -3,6 +3,7 @@ package com.mehmandarov.llmvalidation;
 import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import com.mehmandarov.llmvalidation.model.ValidationResult;
 import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
+import com.mehmandarov.llmvalidation.chapter3_validation.OutputNormalizer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -104,5 +105,84 @@ class Chapter3Test {
         // Assert
         assertThat(result.isValid()).isTrue();
         assertThat(result.errors()).isEmpty();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  OutputNormalizer tests
+    // ─────────────────────────────────────────────────────────────────────
+
+    private final OutputNormalizer normalizer = new OutputNormalizer();
+
+    @Test
+    @DisplayName("should normalize amounts to 2 decimal places")
+    void shouldNormalizeAmounts() {
+        // "1500" (no decimals) → "1500.00"
+        ExtractedInvoice raw = new ExtractedInvoice(
+                "INV-001", LocalDate.now(), new BigDecimal("1500"), "USD", null, List.of());
+
+        ExtractedInvoice normalized = normalizer.normalize(raw);
+
+        assertThat(normalized.amount()).isEqualByComparingTo("1500.00");
+        assertThat(normalized.amount().scale()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("should normalize currency to uppercase")
+    void shouldNormalizeCurrency() {
+        ExtractedInvoice raw = new ExtractedInvoice(
+                "INV-001", LocalDate.now(), new BigDecimal("100.00"), " usd ", null, List.of());
+
+        ExtractedInvoice normalized = normalizer.normalize(raw);
+
+        assertThat(normalized.currency()).isEqualTo("USD");
+    }
+
+    @Test
+    @DisplayName("should trim and collapse whitespace in strings")
+    void shouldNormalizeStrings() {
+        ExtractedInvoice raw = new ExtractedInvoice(
+                "  INV-001  ", LocalDate.now(), new BigDecimal("100.00"), "USD",
+                "  john@example.com  ", List.of());
+
+        ExtractedInvoice normalized = normalizer.normalize(raw);
+
+        assertThat(normalized.invoiceNumber()).isEqualTo("INV-001");
+        assertThat(normalized.customerEmail()).isEqualTo("john@example.com");
+    }
+
+    @Test
+    @DisplayName("should make two format variants identical after normalization")
+    void shouldUnifyFormatVariants() {
+        // Simulate two different LLM responses for the same invoice
+        ExtractedInvoice responseA = new ExtractedInvoice(
+                "  INV-2024-001", LocalDate.of(2024, 3, 21),
+                new BigDecimal("1500.00"), "USD", null, List.of());
+        ExtractedInvoice responseB = new ExtractedInvoice(
+                "INV-2024-001 ", LocalDate.of(2024, 3, 21),
+                new BigDecimal("1500"), "usd", null, List.of());
+
+        ExtractedInvoice normA = normalizer.normalize(responseA);
+        ExtractedInvoice normB = normalizer.normalize(responseB);
+
+        assertThat(normA.invoiceNumber()).isEqualTo(normB.invoiceNumber());
+        assertThat(normA.amount()).isEqualByComparingTo(normB.amount());
+        assertThat(normA.currency()).isEqualTo(normB.currency());
+        assertThat(normA.date()).isEqualTo(normB.date());
+    }
+
+    @Test
+    @DisplayName("should normalize line item unit prices")
+    void shouldNormalizeLineItems() {
+        ExtractedInvoice.LineItem item = new ExtractedInvoice.LineItem(
+                "  Consulting Services  ", 2, new BigDecimal("500"));
+
+        ExtractedInvoice raw = new ExtractedInvoice(
+                "INV-001", LocalDate.now(), new BigDecimal("1000"), "USD", null, List.of(item));
+
+        ExtractedInvoice normalized = normalizer.normalize(raw);
+
+        assertThat(normalized.items()).hasSize(1);
+        assertThat(normalized.items().getFirst().description()).isEqualTo("Consulting Services");
+        assertThat(normalized.items().getFirst().unitPrice().scale()).isEqualTo(2);
     }
 }

@@ -1,10 +1,11 @@
 package com.mehmandarov.llmvalidation;
 
-import com.mehmandarov.llmvalidation.chapter2_guardrails.CanaryTokenGuardrail;
-import com.mehmandarov.llmvalidation.chapter2_guardrails.SecureInvoiceExtractor;
+import com.mehmandarov.llmvalidation.chapter2_guardrails.*;
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
 import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.guardrail.InputGuardrailException;
+import dev.langchain4j.guardrail.InputGuardrailResult;
 import dev.langchain4j.guardrail.OutputGuardrailResult;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
@@ -120,6 +121,130 @@ class Chapter2Test {
             CanaryTokenGuardrail guardrail2 = new CanaryTokenGuardrail();
 
             assertThat(guardrail1.getCanaryToken()).isNotEqualTo(guardrail2.getCanaryToken());
+        }
+    }
+
+    @Nested
+    @DisplayName("Layer 3: Input Length Guardrail (Prompt Stuffing)")
+    class PromptStuffing {
+
+        @Test
+        @DisplayName("should block oversized input (prompt stuffing)")
+        void shouldBlockOversizedInput() {
+            InputLengthGuardrail guardrail = new InputLengthGuardrail();
+            UserMessage oversized = UserMessage.from(InvoiceTestData.PROMPT_STUFFING);
+
+            InputGuardrailResult result = guardrail.validate(oversized);
+
+            assertThat(result.isSuccess()).isFalse();
+        }
+
+        @Test
+        @DisplayName("should allow normal-length input")
+        void shouldAllowNormalInput() {
+            InputLengthGuardrail guardrail = new InputLengthGuardrail();
+            UserMessage normal = UserMessage.from(InvoiceTestData.CLEAN_INVOICE);
+
+            InputGuardrailResult result = guardrail.validate(normal);
+
+            assertThat(result.isSuccess()).isTrue();
+        }
+
+        @Test
+        @DisplayName("should respect custom max length")
+        void shouldRespectCustomMaxLength() {
+            InputLengthGuardrail guardrail = new InputLengthGuardrail(50);
+            UserMessage tooLong = UserMessage.from(InvoiceTestData.CLEAN_INVOICE); // > 50 chars
+
+            InputGuardrailResult result = guardrail.validate(tooLong);
+
+            assertThat(result.isSuccess()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("Layer 4: Output Format Guardrail (Structural Integrity)")
+    class OutputFormat {
+
+        @Test
+        @DisplayName("should accept valid JSON response")
+        void shouldAcceptValidJson() {
+            OutputFormatGuardrail guardrail = new OutputFormatGuardrail();
+            AiMessage json = AiMessage.from("{ \"invoiceNumber\": \"INV-001\", \"amount\": 500.00 }");
+
+            OutputGuardrailResult result = guardrail.validate(json);
+
+            assertThat(result.isSuccess()).isTrue();
+        }
+
+        @Test
+        @DisplayName("should reject prose response (hijacked model)")
+        void shouldRejectProseResponse() {
+            OutputFormatGuardrail guardrail = new OutputFormatGuardrail();
+            AiMessage prose = AiMessage.from(
+                    "I'm sorry, I can't help with that. Please contact support.");
+
+            OutputGuardrailResult result = guardrail.validate(prose);
+
+            assertThat(result.isSuccess()).isFalse();
+        }
+
+        @Test
+        @DisplayName("should reject unbalanced JSON braces")
+        void shouldRejectUnbalancedBraces() {
+            OutputFormatGuardrail guardrail = new OutputFormatGuardrail();
+            AiMessage broken = AiMessage.from("{ \"invoiceNumber\": \"INV-001\", \"nested\": { \"bad\": true }");
+
+            OutputGuardrailResult result = guardrail.validate(broken);
+
+            assertThat(result.isSuccess()).isFalse();
+        }
+    }
+
+    @Nested
+    @DisplayName("Layer 5: Fortified Extractor (Full Defense Stack)")
+    class Fortified {
+
+        @Test
+        @DisplayName("should block injection through the full stack")
+        void shouldBlockInjectionThroughFullStack() {
+            FortifiedInvoiceExtractor extractor = AiServices.create(
+                    FortifiedInvoiceExtractor.class, mockModel);
+
+            assertThatThrownBy(() -> extractor.extract(InvoiceTestData.INJECTION_ATTACK))
+                    .isInstanceOf(InputGuardrailException.class);
+        }
+
+        @Test
+        @DisplayName("should block oversized input through the full stack")
+        void shouldBlockOversizedInputThroughFullStack() {
+            FortifiedInvoiceExtractor extractor = AiServices.create(
+                    FortifiedInvoiceExtractor.class, mockModel);
+
+            assertThatThrownBy(() -> extractor.extract(InvoiceTestData.PROMPT_STUFFING))
+                    .isInstanceOf(InputGuardrailException.class);
+        }
+
+        @Test
+        @DisplayName("should allow clean input and produce output through the full stack")
+        void shouldAllowCleanInputThroughFullStack() {
+            // Arrange — model returns valid JSON
+            String goodJson = """
+                { "invoiceNumber": "INV-2024-001", "date": "2024-03-21", "amount": 1500.00, "currency": "USD" }
+                """;
+            ChatResponse response = ChatResponse.builder().aiMessage(AiMessage.from(goodJson)).build();
+            when(mockModel.chat(any(List.class))).thenReturn(response);
+            when(mockModel.chat(any(ChatRequest.class))).thenReturn(response);
+
+            FortifiedInvoiceExtractor extractor = AiServices.create(
+                    FortifiedInvoiceExtractor.class, mockModel);
+
+            // Act — should pass all guards and return structured data
+            var result = extractor.extract(InvoiceTestData.CLEAN_INVOICE);
+
+            // Assert
+            assertThat(result).isNotNull();
+            assertThat(result.invoiceNumber()).isEqualTo("INV-2024-001");
         }
     }
 }

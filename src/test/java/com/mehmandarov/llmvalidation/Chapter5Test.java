@@ -2,7 +2,10 @@ package com.mehmandarov.llmvalidation;
 
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
+import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer;
+import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer.StabilityReport;
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
+import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
@@ -10,6 +13,8 @@ import dev.langchain4j.model.chat.response.ChatResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -79,5 +84,64 @@ class Chapter5Test {
         when(model.chat(any(ChatRequest.class))).thenReturn(response);
         when(model.toString()).thenReturn(name);
         return model;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  StabilityAnalyzer tests
+    // ─────────────────────────────────────────────────────────────────────
+
+    private final StabilityAnalyzer stabilityAnalyzer = new StabilityAnalyzer();
+
+    @Test
+    @DisplayName("should report 100% stability when all results are identical")
+    void shouldReportPerfectStability() {
+        ExtractedInvoice same = new ExtractedInvoice(
+                "INV-001", LocalDate.of(2024, 3, 21),
+                new BigDecimal("1500.00"), "USD", null, List.of());
+
+        StabilityReport report = stabilityAnalyzer.analyze(List.of(same, same, same, same, same));
+
+        assertThat(report.overallStability()).isEqualTo(1.0);
+        assertThat(report.fieldReports().get("invoiceNumber").agreement()).isEqualTo(1.0);
+        assertThat(report.fieldReports().get("amount").agreement()).isEqualTo(1.0);
+    }
+
+    @Test
+    @DisplayName("should report low stability when results disagree")
+    void shouldReportLowStability() {
+        // 5 runs, all different amounts — no majority
+        List<ExtractedInvoice> chaotic = List.of(
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("100"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("200"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("300"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("400"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("500"), "USD", null, List.of())
+        );
+
+        StabilityReport report = stabilityAnalyzer.analyze(chaotic);
+
+        // invoiceNumber, date, currency all agree → 1.0 each
+        // amount: 5 different values, each 1/5 → 0.2
+        // overall: (1.0 + 1.0 + 0.2 + 1.0) / 4 = 0.8
+        assertThat(report.fieldReports().get("amount").agreement()).isEqualTo(0.2);
+        assertThat(report.overallStability()).isLessThan(1.0);
+    }
+
+    @Test
+    @DisplayName("should identify the dominant value per field")
+    void shouldIdentifyDominantValues() {
+        // 3 say "INV-001", 2 say "INV-002"
+        List<ExtractedInvoice> results = List.of(
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("1500"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("1500"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-001", LocalDate.of(2024, 3, 21), new BigDecimal("1500"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-002", LocalDate.of(2024, 3, 21), new BigDecimal("1500"), "USD", null, List.of()),
+                new ExtractedInvoice("INV-002", LocalDate.of(2024, 3, 21), new BigDecimal("1500"), "USD", null, List.of())
+        );
+
+        StabilityReport report = stabilityAnalyzer.analyze(results);
+
+        assertThat(report.fieldReports().get("invoiceNumber").dominantValue()).isEqualTo("INV-001");
+        assertThat(report.fieldReports().get("invoiceNumber").agreement()).isEqualTo(0.6);
     }
 }

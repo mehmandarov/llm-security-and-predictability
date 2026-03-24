@@ -10,6 +10,8 @@ import com.mehmandarov.llmvalidation.chapter4_correction.CorrectiveExtractor;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
+import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer;
+import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer.StabilityReport;
 import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import com.mehmandarov.llmvalidation.model.ValidationResult;
 import com.mehmandarov.llmvalidation.support.OllamaAvailable;
@@ -288,6 +290,130 @@ class OllamaEndToEndIT {
             }
         }
         // No assertions — the point IS the variance. The audience sees it in the logs.
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Bonus — Seed-based reproducibility: does the model's promise hold?
+    // ─────────────────────────────────────────────────────────────────────
+
+    @Test
+    @Order(10)
+    @DisplayName("🎲 Bonus · Seed-based reproducibility — testing the model's determinism promise")
+    void bonus_seedReproducibility() {
+        // Build two identical models with the same seed
+        ChatModel modelA = OllamaChatModel.builder()
+                .baseUrl(OLLAMA_URL).modelName(MODEL)
+                .temperature(0.0).seed(42)
+                .timeout(TIMEOUT).build();
+        ChatModel modelB = OllamaChatModel.builder()
+                .baseUrl(OLLAMA_URL).modelName(MODEL)
+                .temperature(0.0).seed(42)
+                .timeout(TIMEOUT).build();
+
+        SimpleInvoiceExtractor extractorA = AiServices.create(SimpleInvoiceExtractor.class, modelA);
+        SimpleInvoiceExtractor extractorB = AiServices.create(SimpleInvoiceExtractor.class, modelB);
+
+        log.info("🔑 Testing seed=42 reproducibility...");
+        ExtractedInvoice resultA = extractorA.extract(InvoiceTestData.CLEAN_INVOICE);
+        ExtractedInvoice resultB = extractorB.extract(InvoiceTestData.CLEAN_INVOICE);
+
+        log.info("   Model A: invoice={}, amount={}, date={}", resultA.invoiceNumber(), resultA.amount(), resultA.date());
+        log.info("   Model B: invoice={}, amount={}, date={}", resultB.invoiceNumber(), resultB.amount(), resultB.date());
+
+        // Compare field-by-field
+        boolean match = true;
+        if (!java.util.Objects.equals(resultA.invoiceNumber(), resultB.invoiceNumber())) {
+            log.warn("   ❌ invoiceNumber differs: '{}' vs '{}'", resultA.invoiceNumber(), resultB.invoiceNumber());
+            match = false;
+        }
+        if (!java.util.Objects.equals(resultA.date(), resultB.date())) {
+            log.warn("   ❌ date differs: '{}' vs '{}'", resultA.date(), resultB.date());
+            match = false;
+        }
+        if (resultA.amount() != null && resultB.amount() != null
+                ? resultA.amount().compareTo(resultB.amount()) != 0
+                : !java.util.Objects.equals(resultA.amount(), resultB.amount())) {
+            log.warn("   ❌ amount differs: '{}' vs '{}'", resultA.amount(), resultB.amount());
+            match = false;
+        }
+        if (!java.util.Objects.equals(resultA.currency(), resultB.currency())) {
+            log.warn("   ❌ currency differs: '{}' vs '{}'", resultA.currency(), resultB.currency());
+            match = false;
+        }
+
+        if (match) {
+            log.info("   ✅ IDENTICAL — seed=42 produced the same result both times.");
+        } else {
+            log.warn("   ⚠️ DIFFERENT — even with the same seed, results diverged. "
+                    + "This is why we need all five defensive layers.");
+        }
+
+        // Now test with a different seed to show seed matters
+        ChatModel modelC = OllamaChatModel.builder()
+                .baseUrl(OLLAMA_URL).modelName(MODEL)
+                .temperature(0.0).seed(99)
+                .timeout(TIMEOUT).build();
+        SimpleInvoiceExtractor extractorC = AiServices.create(SimpleInvoiceExtractor.class, modelC);
+        ExtractedInvoice resultC = extractorC.extract(InvoiceTestData.CLEAN_INVOICE);
+        log.info("   Model C (seed=99): invoice={}, amount={}", resultC.invoiceNumber(), resultC.amount());
+        // No hard assertions — this is a demonstration, not a guarantee.
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Bonus — Stability measurement: quantify the variance
+    // ─────────────────────────────────────────────────────────────────────
+
+    @Test
+    @Order(11)
+    @DisplayName("🎲 Bonus · Stability analysis — measuring variance across repeated runs")
+    void bonus_stabilityMeasurement() {
+        ChatModel deterministicModel = OllamaChatModel.builder()
+                .baseUrl(OLLAMA_URL).modelName(MODEL)
+                .temperature(0.0).timeout(TIMEOUT).build();
+
+        SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, deterministicModel);
+        StabilityAnalyzer analyzer = new StabilityAnalyzer();
+
+        log.info("📊 Running 5 extractions at temperature=0.0 to measure stability...");
+        java.util.List<ExtractedInvoice> results = new java.util.ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            try {
+                ExtractedInvoice result = extractor.extract(InvoiceTestData.CLEAN_INVOICE);
+                results.add(result);
+                log.info("   Run {}: invoice={}, amount={}", i, result.invoiceNumber(), result.amount());
+            } catch (Exception e) {
+                log.warn("   Run {}: FAILED — {}", i, e.getMessage());
+            }
+        }
+
+        if (results.size() >= 2) {
+            StabilityReport report = analyzer.analyze(results);
+            log.info("📊 Temperature 0.0 overall stability: {}%", (int) (report.overallStability() * 100));
+        }
+
+        // Now measure at higher temperature for comparison
+        ChatModel creativeModel = OllamaChatModel.builder()
+                .baseUrl(OLLAMA_URL).modelName(MODEL)
+                .temperature(0.8).timeout(TIMEOUT).build();
+        SimpleInvoiceExtractor creativeExtractor = AiServices.create(SimpleInvoiceExtractor.class, creativeModel);
+
+        log.info("📊 Running 5 extractions at temperature=0.8 to measure stability...");
+        java.util.List<ExtractedInvoice> creativeResults = new java.util.ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            try {
+                ExtractedInvoice result = creativeExtractor.extract(InvoiceTestData.CLEAN_INVOICE);
+                creativeResults.add(result);
+                log.info("   Run {}: invoice={}, amount={}", i, result.invoiceNumber(), result.amount());
+            } catch (Exception e) {
+                log.warn("   Run {}: FAILED — {}", i, e.getMessage());
+            }
+        }
+
+        if (creativeResults.size() >= 2) {
+            StabilityReport report = analyzer.analyze(creativeResults);
+            log.info("📊 Temperature 0.8 overall stability: {}%", (int) (report.overallStability() * 100));
+        }
+        // The contrast between the two stability scores IS the demo point.
     }
 }
 
