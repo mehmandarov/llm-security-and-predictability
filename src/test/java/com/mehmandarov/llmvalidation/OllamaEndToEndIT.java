@@ -1,6 +1,8 @@
 package com.mehmandarov.llmvalidation;
 
 import com.mehmandarov.llmvalidation.chapter1_basics.SimpleInvoiceExtractor;
+import com.mehmandarov.llmvalidation.chapter2_guardrails.CanaryInvoiceExtractor;
+import com.mehmandarov.llmvalidation.chapter2_guardrails.CanaryTokenGuardrail;
 import com.mehmandarov.llmvalidation.chapter2_guardrails.PiiGuardrail;
 import com.mehmandarov.llmvalidation.chapter2_guardrails.PromptInjectionGuardrail;
 import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
@@ -129,12 +131,40 @@ class OllamaEndToEndIT {
         // The guardrail replaces PII and returns a successful-with-replacement result
     }
 
+    @Test
+    @Order(4)
+    @DisplayName("Ch2 · Canary trap detects injection breach in real model output")
+    void chapter2_canaryTrapWithRealModel() {
+        CanaryTokenGuardrail canaryGuardrail = new CanaryTokenGuardrail();
+        String canary = canaryGuardrail.getCanaryToken();
+        log.info("🐤 Canary token: {}", canary);
+
+        // Ask the model to extract from a malicious input — with the canary in the system prompt
+        CanaryInvoiceExtractor extractor = AiServices.create(CanaryInvoiceExtractor.class, ollamaModel);
+        try {
+            ExtractedInvoice result = extractor.extract(InvoiceTestData.INJECTION_ATTACK, canary);
+            log.info("📋 Model response: {}", result);
+            // Even if it parsed, check if the canary leaked into any field
+            String responseStr = result.toString();
+            if (responseStr.contains(canary)) {
+                log.warn("🚨 CANARY TRIGGERED in parsed response — injection breach confirmed!");
+            } else {
+                log.info("🤔 Model did NOT output the canary. It may have ignored the injection OR the canary instruction.");
+                log.info("   This is the limitation: the canary is a tripwire, not a guarantee.");
+            }
+        } catch (Exception e) {
+            // Model may output the raw canary token, which can't be parsed as ExtractedInvoice
+            log.info("💥 Model output couldn't be parsed: {}", e.getMessage());
+            log.info("   This likely means the model output the canary token (good!) or garbage (expected on injection).");
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  Chapter 3 — The Hallucination: validation catches what the LLM gets wrong
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(4)
+    @Order(5)
     @DisplayName("Ch3 · Real model output is validated — errors are caught deterministically")
     void chapter3_validateRealOutput() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -160,7 +190,7 @@ class OllamaEndToEndIT {
     }
 
     @Test
-    @Order(5)
+    @Order(6)
     @DisplayName("Ch3 · Real model struggles with bad math")
     void chapter3_validateMathError() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -179,7 +209,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(6)
+    @Order(7)
     @DisplayName("Ch4 · Self-correction loop improves results")
     void chapter4_selfCorrectionWithRealModel() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -205,7 +235,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(7)
+    @Order(8)
     @DisplayName("Ch5 · Consensus across multiple calls (same model, different temperatures)")
     void chapter5_consensusWithRealModels() {
         // Use the same model at different temperatures to simulate multi-model diversity
@@ -234,7 +264,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(8)
+    @Order(9)
     @DisplayName("🎲 Bonus · Same input, 3 extractions — observe the variance")
     void bonus_demonstrateNonDeterminism() {
         // Use temperature > 0 so the model actually varies

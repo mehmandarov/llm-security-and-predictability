@@ -1,10 +1,10 @@
-# Taming the Chaos: Validation and Determinism in LLM-Powered Applications
+# Taming the Chaos: Security and Predictability in LLM-Powered Applications
 
-This repository contains the demo code and examples for the talk **"Taming the Chaos"**. It demonstrates practical patterns for building reliable, deterministic systems on top of probabilistic LLMs.
+This repository contains the demo code and examples for the talk **"Taming the Chaos"**. It demonstrates practical patterns for building secure, predictable systems on top of probabilistic LLMs.
 
 ## Overview
 
-LLMs are probabilistic by nature—great for creativity, but challenging for business logic. This project walks through the "5 Stages of LLM Grief," showing how to move from naive implementations to production-hardened resilience.
+LLMs are probabilistic by nature — great for creativity, but dangerous for business logic. They can leak sensitive data, obey injected instructions, hallucinate values, and give different answers every time. This project walks through the "5 Stages of LLM Grief," showing how to move from naive implementations to production-hardened resilience — securing inputs and outputs, validating with deterministic code, self-correcting with feedback loops, and building confidence through multi-model consensus.
 
 ## Prerequisites
 
@@ -48,6 +48,7 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
 *   **Chapter 2: The Attack (Security & Guardrails)**
     *   `PromptInjectionGuardrail.java`: Blocks malicious inputs.
     *   `PiiGuardrail.java`: Redacts sensitive data from outputs.
+    *   `CanaryTokenGuardrail.java` + `CanaryInvoiceExtractor.java`: Embeds a secret "canary" token in the system prompt; if it appears in the output, an injection breach is confirmed.
     *   *Lesson:* Never trust the input; never trust the output.
 *   **Chapter 3: The Hallucination (Deterministic Validation)**
     *   `StrictValidator.java`: Validates schema (Jakarta Beans) and business logic (Math, Dates) *deterministically*.
