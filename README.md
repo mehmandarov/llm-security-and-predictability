@@ -4,11 +4,11 @@ This repository contains the demo code and examples for the talk **"Taming the C
 
 ## Overview
 
-LLMs are probabilistic by nature — great for creativity, but dangerous for business logic. They can leak sensitive data, obey injected instructions, hallucinate values, and give different answers every time. This project walks through the "5 Stages of LLM Grief," showing how to move from naive implementations to production-hardened resilience — securing inputs and outputs, validating with deterministic code, self-correcting with feedback loops, and building confidence through multi-model consensus.
+LLMs are probabilistic by nature — great for creativity, but dangerous for business logic. They can leak sensitive data, obey injected instructions, hallucinate values, and give different answers every time. This project walks through the "5 Stages of LLM Grief," showing how to move from naive implementations to production-hardened resilience — securing inputs and outputs, validating with deterministic code, self-correcting with feedback loops, and building confidence through multi-model consensus. A bonus chapter demonstrates synthetic verification via the "Mirror Test."
 
 ## Prerequisites
 
-*   **Java 17+**
+*   **Java 21+**
 *   **Maven**
 *   **Ollama** (optional — for end-to-end integration tests)
     ```bash
@@ -46,13 +46,15 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
     *   `SimpleInvoiceExtractor.java`: A basic LangChain4j service interface.
     *   *Lesson:* Structured output is not validation.
 *   **Chapter 2: The Attack (Security & Guardrails)**
-    *   `PromptInjectionGuardrail.java`: Blocks malicious inputs via keyword blacklist.
-    *   `InputLengthGuardrail.java`: Blocks prompt-stuffing attacks (oversized inputs that push the system prompt out of the context window).
-    *   `PiiGuardrail.java`: Redacts sensitive data (emails, SSNs, credit cards) from outputs.
-    *   `OutputFormatGuardrail.java`: Rejects non-JSON responses — catches hijacked models outputting prose.
-    *   `SandwichedInvoiceExtractor.java`: Wraps user input in `<<<USER_DATA>>>` delimiters, teaching the model to treat it as data, not instructions (OWASP-recommended).
-    *   `CanaryTokenGuardrail.java` + `CanaryInvoiceExtractor.java`: Embeds a secret "canary" token in the system prompt; if it appears in the output, an injection breach is confirmed.
-    *   `FortifiedInvoiceExtractor.java`: All guardrails combined — input length → blacklist → sandwiching → format check → PII redaction. The full castle.
+    *   `PromptInjectionGuardrail.java`: Blocks malicious inputs via keyword blacklist AND delimiter breakout attempts.
+    *   `InputLengthGuardrail.java`: Blocks prompt-stuffing attacks.
+    *   `IntentClassifier.java`: A cheap "Bouncer" model that pre-screens malicious intent before calling the expensive model.
+    *   `PiiGuardrail.java`: Redacts sensitive data from outputs.
+    *   `OutputFormatGuardrail.java`: Rejects non-JSON responses.
+    *   `SandwichedInvoiceExtractor.java`: Wraps user input in `<user_input>` / `</user_input>` delimiters (OWASP-recommended).
+    *   `SecureInvoiceExtractor.java`: Extraction with injection + PII guardrails wired in.
+    *   `CanaryTokenGuardrail.java` + `CanaryInvoiceExtractor.java`: Embeds a secret "canary" token as an injection tripwire.
+    *   `FortifiedInvoiceExtractor.java`: All guardrails combined. The full castle.
     *   *Lesson:* Never trust the input; never trust the output. Defense in depth.
 *   **Chapter 3: The Hallucination (Deterministic Validation)**
     *   `StrictValidator.java`: Validates schema (Jakarta Beans) and business logic (Math, Dates) *deterministically*.
@@ -61,10 +63,14 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
 *   **Chapter 4: The Bargaining (Self-Correction)**
     *   `CorrectiveExtractor.java`: Feeds validation errors back to the LLM for a second attempt.
     *   *Lesson:* Turn runtime exceptions into successful transactions.
-*   **Chapter 5: The Council (Consensus)**
+*   **Chapter 5: The Council (Consensus & Determinism)**
     *   `MultiModelConsensus.java`: Queries multiple models and uses majority voting to ensure accuracy.
-    *   `StabilityAnalyzer.java`: Runs extraction N times and computes per-field agreement percentages — turns "vibes" into numbers.
-    *   *Lesson:* Democracy for AI reduces individual model bias/error. Measure variance, don't guess.
+    *   `StabilityAnalyzer.java`: Runs extraction N times and computes per-field agreement percentages.
+    *   *Lesson:* Turn probability into predictability using Seeds, Consensus, and Stability Measurement.
+    *   *Bonus:* Seed-based reproducibility tests (`OllamaEndToEndIT.java`) verify whether `temperature=0` + `seed=42` yields identical results.
+*   **Bonus: The Grand Finale (The Mirror Test)**
+    *   `MirrorVerifier.java`: Performs a round-trip "Reconstruction" (JSON → Text) to detect silent omissions.
+    *   *Lesson:* When there is no "Golden Answer," verify the extraction against the original reality.
 
 ## Key Technologies
 
