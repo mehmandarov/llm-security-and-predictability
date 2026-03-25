@@ -21,7 +21,7 @@ LLMs are probabilistic by nature — great for creativity, but dangerous for bus
 1.  **Clone the repository:**
     ```bash
     git clone <repository-url>
-    cd llm-validation-and-predictability
+    cd llm-security-and-predictability
     ```
 
 2.  **Run the unit tests (no LLM required):**
