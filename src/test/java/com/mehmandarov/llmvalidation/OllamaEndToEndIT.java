@@ -240,9 +240,9 @@ class OllamaEndToEndIT {
 
     @Test
     @Order(8)
-    @DisplayName("Ch5 · Consensus across multiple calls (same model, different temperatures)")
-    void chapter5_consensusWithRealModels() {
-        // Use the same model at different temperatures to simulate multi-model diversity
+    @DisplayName("Ch5 · Consensus across same model at different temperatures")
+    void chapter5_consensusSameModelDifferentTemperatures() {
+        // Use the same model at different temperatures to simulate diversity
         ChatModel deterministic = OllamaChatModel.builder()
                 .baseUrl(OLLAMA_URL).modelName(MODEL).temperature(0.0).timeout(TIMEOUT).build();
         ChatModel creative = OllamaChatModel.builder()
@@ -254,7 +254,7 @@ class OllamaEndToEndIT {
 
         ConsensusResult result = consensus.runConsensus(InvoiceTestData.CLEAN_INVOICE);
 
-        log.info("🗳️ Consensus result: highConfidence={}, confidence={}%",
+        log.info("🗳️ Same-model consensus: highConfidence={}, confidence={}%",
                 result.isHighConfidence(), (int) (result.confidence() * 100));
         if (result.consensus() != null) {
             log.info("   Invoice: {}", result.consensus().invoiceNumber());
@@ -263,12 +263,55 @@ class OllamaEndToEndIT {
         // With clean input, even diverse temperatures should mostly agree
     }
 
+    @Test
+    @Order(9)
+    @DisplayName("Ch5 · Consensus across DIFFERENT models (true multi-model)")
+    void chapter5_consensusDifferentModels() {
+        // True multi-model consensus: different architectures, same question
+        String modelA = "gemma3:1b";
+        String modelB = "llama3.2:1b";
+
+        ChatModel gemma = OllamaChatModel.builder()
+                .baseUrl(OLLAMA_URL).modelName(modelA).temperature(0.0).timeout(TIMEOUT).build();
+        ChatModel llama;
+        try {
+            llama = OllamaChatModel.builder()
+                    .baseUrl(OLLAMA_URL).modelName(modelB).temperature(0.0).timeout(TIMEOUT).build();
+        } catch (Exception e) {
+            log.warn("⚠️ Model '{}' not available — run `ollama pull {}` to enable this test. Skipping.", modelB, modelB);
+            return;
+        }
+
+        log.info("🗳️ True multi-model consensus: {} + {} + {} (at different temp)", modelA, modelB, modelA);
+
+        // Three voters: gemma, llama, and gemma at higher temp for a tiebreaker
+        ChatModel gemmaTiebreaker = OllamaChatModel.builder()
+                .baseUrl(OLLAMA_URL).modelName(modelA).temperature(0.5).timeout(TIMEOUT).build();
+
+        MultiModelConsensus consensus = new MultiModelConsensus(List.of(gemma, llama, gemmaTiebreaker));
+
+        try {
+            ConsensusResult result = consensus.runConsensus(InvoiceTestData.CLEAN_INVOICE);
+
+            log.info("🗳️ Multi-model consensus: highConfidence={}, confidence={}%",
+                    result.isHighConfidence(), (int) (result.confidence() * 100));
+            if (result.consensus() != null) {
+                log.info("   Invoice: {}", result.consensus().invoiceNumber());
+                log.info("   Amount:  {}", result.consensus().amount());
+                log.info("   Date:    {}", result.consensus().date());
+            }
+            log.info("   🎯 Different architectures agreeing is stronger evidence than the same model agreeing with itself.");
+        } catch (Exception e) {
+            log.warn("⚠️ Multi-model consensus failed (model may not be pulled): {}", e.getMessage());
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  Bonus — The Mirror Test: round-trip verification with a real model
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(9)
+    @Order(10)
     @DisplayName("🪞 Bonus · Mirror Test — does the extraction survive a round trip?")
     void chapter6_mirrorTestWithRealModel() {
         // Step 1: Extract structured data from the clean invoice
@@ -303,7 +346,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(10)
+    @Order(11)
     @DisplayName("🎲 Bonus · Same input, 3 extractions — observe the variance")
     void bonus_demonstrateNonDeterminism() {
         // Use temperature > 0 so the model actually varies
@@ -334,7 +377,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(11)
+    @Order(12)
     @DisplayName("🎲 Bonus · Seed-based reproducibility — testing the model's determinism promise")
     void bonus_seedReproducibility() {
         // Build two identical models with the same seed
@@ -401,7 +444,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(12)
+    @Order(13)
     @DisplayName("🎲 Bonus · Stability analysis — measuring variance across repeated runs")
     void bonus_stabilityMeasurement() {
         ChatModel deterministicModel = OllamaChatModel.builder()

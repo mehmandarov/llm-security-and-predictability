@@ -107,6 +107,32 @@ class Chapter3Test {
         assertThat(result.errors()).isEmpty();
     }
 
+    @Test
+    @DisplayName("should reject negative amounts (@Positive)")
+    void shouldRejectNegativeAmount() {
+        ExtractedInvoice negative = new ExtractedInvoice(
+                "INV-NEG-001", LocalDate.now(),
+                new BigDecimal("-500.00"), "USD", null, List.of());
+
+        ValidationResult result = validator.validate(negative);
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.errors()).anyMatch(e -> e.category().equals("SCHEMA"));
+    }
+
+    @Test
+    @DisplayName("should reject zero amounts (@Positive)")
+    void shouldRejectZeroAmount() {
+        ExtractedInvoice zero = new ExtractedInvoice(
+                "INV-ZERO-001", LocalDate.now(),
+                BigDecimal.ZERO, "USD", null, List.of());
+
+        ValidationResult result = validator.validate(zero);
+
+        assertThat(result.isValid()).isFalse();
+        assertThat(result.errors()).anyMatch(e -> e.category().equals("SCHEMA"));
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  OutputNormalizer tests
     // ─────────────────────────────────────────────────────────────────────
@@ -153,7 +179,9 @@ class Chapter3Test {
     @Test
     @DisplayName("should make two format variants identical after normalization")
     void shouldUnifyFormatVariants() {
-        // Simulate two different LLM responses for the same invoice
+        // Simulate two different LLM responses for the same invoice:
+        //   A: "  INV-2024-001", $1,500.00, "USD"
+        //   B: "INV-2024-001 ", 1500, "usd"
         ExtractedInvoice responseA = new ExtractedInvoice(
                 "  INV-2024-001", LocalDate.of(2024, 3, 21),
                 new BigDecimal("1500.00"), "USD", null, List.of());
@@ -168,6 +196,12 @@ class Chapter3Test {
         assertThat(normA.amount()).isEqualByComparingTo(normB.amount());
         assertThat(normA.currency()).isEqualTo(normB.currency());
         assertThat(normA.date()).isEqualTo(normB.date());
+
+        // Both should normalize to the same values:
+        // "INV-2024-001", 1500.00, "USD"
+        assertThat(normA.invoiceNumber()).isEqualTo("INV-2024-001");
+        assertThat(normA.amount().toPlainString()).isEqualTo("1500.00");
+        assertThat(normA.currency()).isEqualTo("USD");
     }
 
     @Test

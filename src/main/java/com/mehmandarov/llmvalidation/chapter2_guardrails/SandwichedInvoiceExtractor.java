@@ -8,8 +8,8 @@ import dev.langchain4j.service.V;
 /**
  * Chapter 2: Delimiter-based Input Isolation.
  *
- * <p>Wraps user-supplied text in explicit delimiters ({@code <<<USER_DATA>>>} …
- * {@code <<<END_USER_DATA>>>}) and instructs the model to treat everything between
+ * <p>Wraps user-supplied text in explicit delimiters ({@code <user_input>} …
+ * {@code </user_input>}) and instructs the model to treat everything between
  * them as <b>data</b>, never instructions. This is an OWASP-recommended technique
  * for reducing the effectiveness of prompt injection: the model is taught to
  * distinguish data from instructions structurally, not just semantically.</p>

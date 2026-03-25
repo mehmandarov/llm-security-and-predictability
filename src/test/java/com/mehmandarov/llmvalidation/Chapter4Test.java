@@ -37,7 +37,7 @@ class Chapter4Test {
     void shouldSelfCorrect() {
         // Arrange
         String wrongJson = """
-            { "invoiceNumber": "INV-001", "date": "2050-01-01", "amount": 100.00, "currency": "USD" }
+            { "invoiceNumber": "INV-001", "date": "2062-01-01", "amount": 100.00, "currency": "USD" }
             """;
         String correctedJson = """
             { "invoiceNumber": "INV-001", "date": "2026-01-15", "amount": 100.00, "currency": "USD" }
@@ -63,5 +63,31 @@ class Chapter4Test {
 
         // Assert
         assertThat(result.date()).isEqualTo(LocalDate.of(2026, 1, 15)); // The corrected date
+    }
+
+    @Test
+    @DisplayName("should interpret ambiguous date with no corrections if validation passes")
+    void shouldHandleAmbiguousDate() {
+        // Arrange — model first interprets 01/02/2024 as Feb 1st (ambiguous),
+        // validator accepts it (it's a valid past date), so no correction needed.
+        // The point: the corrective loop only kicks in when validation FAILS.
+        String ambiguousJson = """
+            { "invoiceNumber": "INV-AMBIGUOUS-001", "date": "2024-02-01", "amount": 100.00, "currency": "USD" }
+            """;
+
+        ChatResponse response = ChatResponse.builder().aiMessage(AiMessage.from(ambiguousJson)).build();
+        when(mockModel.chat(any(List.class))).thenReturn(response);
+        when(mockModel.chat(any(ChatRequest.class))).thenReturn(response);
+
+        SimpleInvoiceExtractor basicExtractor = AiServices.create(SimpleInvoiceExtractor.class, mockModel);
+        StrictValidator validator = new StrictValidator();
+        CorrectiveExtractor corrective = new CorrectiveExtractor(basicExtractor, validator, 3);
+
+        // Act
+        ExtractedInvoice result = corrective.extract(InvoiceTestData.AMBIGUOUS_DATE);
+
+        // Assert — model chose a valid date, so it passes without correction
+        assertThat(result.date()).isNotNull();
+        assertThat(result.date()).isBeforeOrEqualTo(LocalDate.now());
     }
 }

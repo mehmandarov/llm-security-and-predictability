@@ -3,11 +3,16 @@ package com.mehmandarov.llmvalidation;
 import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import com.mehmandarov.llmvalidation.model.ValidationResult;
 import com.mehmandarov.llmvalidation.chapter1_basics.SimpleInvoiceExtractor;
+import com.mehmandarov.llmvalidation.chapter2_guardrails.PiiGuardrail;
 import com.mehmandarov.llmvalidation.chapter2_guardrails.SecureInvoiceExtractor;
 import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
 import com.mehmandarov.llmvalidation.chapter4_correction.CorrectiveExtractor;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
+import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer;
+import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer.StabilityReport;
+import com.mehmandarov.llmvalidation.chapter6_bonus_mirror.MirrorVerifier;
+import com.mehmandarov.llmvalidation.chapter6_bonus_mirror.MirrorVerifier.VerificationResult;
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
@@ -84,29 +89,26 @@ class LLMValidationTalkTest {
     @Test
     @Order(3)
     void chapter2_TheAttack_shouldRedactPii() {
-        // Arrange
+        // Arrange — a response containing PII that should be scrubbed
         String leakedResponse = """
-            { 
-              "invoiceNumber": "INV-PRIVACY-001", 
-              "date": "2024-03-21", 
-              "amount": 500.00, 
+            {
+              "invoiceNumber": "INV-PRIVACY-001",
+              "date": "2024-03-21",
+              "amount": 500.00,
               "currency": "USD",
               "customerEmail": "private.john@example.com"
             }
             """;
-        ChatResponse response = ChatResponse.builder().aiMessage(AiMessage.from(leakedResponse)).build();
-        when(mockModel.chat(any(List.class))).thenReturn(response);
-        when(mockModel.chat(any(ChatRequest.class))).thenReturn(response);
-        
-        SecureInvoiceExtractor extractor = AiServices.create(SecureInvoiceExtractor.class, mockModel);
 
-        // Act
-        ExtractedInvoice result = extractor.extract(InvoiceTestData.PII_LEAK);
-        
-        // Assert
-        // The OutputGuardrail runs on the textual output BEFORE it is parsed into ExtractedInvoice.
-        // The email in the JSON string is replaced with [REDACTED_EMAIL] by the guardrail.
-        // Verified via logs: "🛡️ PII DETECTED: Redacting email address."
+        // Act — run the guardrail directly to verify redaction
+        PiiGuardrail guardrail = new PiiGuardrail();
+        AiMessage responseWithPii = AiMessage.from(leakedResponse);
+        var result = guardrail.validate(responseWithPii);
+
+        // Assert — email is replaced with [REDACTED_EMAIL]
+        assertThat(result.isSuccess()).isTrue();
+        assertThat(result.successfulText()).contains("[REDACTED_EMAIL]");
+        assertThat(result.successfulText()).doesNotContain("private.john@example.com");
     }
 
     // --- Chapter 3: The Hallucination (Validation) ---
@@ -218,6 +220,54 @@ class LLMValidationTalkTest {
         // Assert — majority wins
         assertThat(result.isHighConfidence()).isTrue();
         assertThat(result.consensus().amount()).isEqualByComparingTo("1200.00");
+    }
+
+    // --- Chapter 5 continued: Stability Analysis ---
+    @Test
+    @Order(8)
+    void chapter5_TheCouncil_shouldMeasureStability() {
+        // Arrange — 5 identical results = perfect stability
+        ExtractedInvoice same = new ExtractedInvoice(
+                "INV-2024-001", LocalDate.of(2024, 3, 21),
+                new BigDecimal("1500.00"), "USD", null, List.of());
+
+        StabilityAnalyzer analyzer = new StabilityAnalyzer();
+
+        // Act
+        StabilityReport report = analyzer.analyze(List.of(same, same, same, same, same));
+
+        // Assert
+        assertThat(report.overallStability()).isEqualTo(1.0);
+        assertThat(report.fieldReports().get("amount").agreement()).isEqualTo(1.0);
+    }
+
+    // --- Bonus: The Mirror Test ---
+    @Test
+    @Order(9)
+    void bonus_TheMirrorTest_shouldDetectOmissions() {
+        // Arrange — model "forgets" the Mouse item
+        String syntheticSummary = "Invoice INV-001 for $1000.00 containing a Laptop.";
+        ChatResponse reconstructionResp = ChatResponse.builder()
+                .aiMessage(AiMessage.from(syntheticSummary)).build();
+        ChatResponse verificationResp = ChatResponse.builder()
+                .aiMessage(AiMessage.from("0.6")).build();
+
+        when(mockModel.chat(any(List.class)))
+                .thenReturn(reconstructionResp)
+                .thenReturn(verificationResp);
+        when(mockModel.chat(any(ChatRequest.class)))
+                .thenReturn(reconstructionResp)
+                .thenReturn(verificationResp);
+
+        MirrorVerifier verifier = new MirrorVerifier(mockModel);
+        String originalText = "Invoice INV-001. Items: 1x Laptop ($1000), 1x Mouse ($50). Total: $1050.";
+        String extractedJson = "{ \"invoiceNumber\": \"INV-001\", \"amount\": 1000.00 }";
+
+        // Act
+        VerificationResult result = verifier.verify(originalText, extractedJson);
+
+        // Assert — low score because the Mouse was omitted
+        assertThat(result.faithfulnessScore()).isLessThan(0.8);
     }
 
     private ChatModel mockChatModel(String json) {
