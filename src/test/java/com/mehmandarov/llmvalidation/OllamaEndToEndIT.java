@@ -12,6 +12,8 @@ import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.Cons
 import com.mehmandarov.llmvalidation.data.InvoiceTestData;
 import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer;
 import com.mehmandarov.llmvalidation.chapter5_consensus.StabilityAnalyzer.StabilityReport;
+import com.mehmandarov.llmvalidation.chapter6_bonus_mirror.MirrorVerifier;
+import com.mehmandarov.llmvalidation.chapter6_bonus_mirror.MirrorVerifier.VerificationResult;
 import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import com.mehmandarov.llmvalidation.model.ValidationResult;
 import com.mehmandarov.llmvalidation.support.OllamaAvailable;
@@ -262,11 +264,46 @@ class OllamaEndToEndIT {
     }
 
     // ─────────────────────────────────────────────────────────────────────
-    //  Bonus — Demonstrating non-determinism: same question, different answers
+    //  Bonus — The Mirror Test: round-trip verification with a real model
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
     @Order(9)
+    @DisplayName("🪞 Bonus · Mirror Test — does the extraction survive a round trip?")
+    void chapter6_mirrorTestWithRealModel() {
+        // Step 1: Extract structured data from the clean invoice
+        SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
+        ExtractedInvoice extracted = extractor.extract(InvoiceTestData.CLEAN_INVOICE);
+        log.info("📋 Extracted: {}", extracted);
+
+        // Step 2: Convert to JSON string (the "extraction result" we want to verify)
+        String extractedJson = String.format(
+                "{ \"invoiceNumber\": \"%s\", \"date\": \"%s\", \"amount\": %s, \"currency\": \"%s\" }",
+                extracted.invoiceNumber(), extracted.date(), extracted.amount(), extracted.currency());
+        log.info("📋 JSON for mirror test: {}", extractedJson);
+
+        // Step 3: Run the Mirror Test — reconstruct text from JSON, compare to original
+        MirrorVerifier verifier = new MirrorVerifier(ollamaModel);
+        VerificationResult result = verifier.verify(InvoiceTestData.CLEAN_INVOICE, extractedJson);
+
+        log.info("🪞 Faithfulness score: {}%", (int) (result.faithfulnessScore() * 100));
+        log.info("🪞 Synthetic summary: {}", result.syntheticSummary());
+
+        if (result.faithfulnessScore() >= 0.8) {
+            log.info("✅ Mirror Test PASSED — the extraction is faithful to the original.");
+        } else {
+            log.warn("⚠️ Mirror Test flagged potential omissions — score below 80%.");
+            log.warn("   This is exactly what the Mirror Test is for: catching silent data loss.");
+        }
+        // No hard assertion — the demo point is showing the round-trip verification concept.
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Bonus — Demonstrating non-determinism: same question, different answers
+    // ─────────────────────────────────────────────────────────────────────
+
+    @Test
+    @Order(10)
     @DisplayName("🎲 Bonus · Same input, 3 extractions — observe the variance")
     void bonus_demonstrateNonDeterminism() {
         // Use temperature > 0 so the model actually varies
@@ -297,7 +334,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(10)
+    @Order(11)
     @DisplayName("🎲 Bonus · Seed-based reproducibility — testing the model's determinism promise")
     void bonus_seedReproducibility() {
         // Build two identical models with the same seed
@@ -364,7 +401,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(11)
+    @Order(12)
     @DisplayName("🎲 Bonus · Stability analysis — measuring variance across repeated runs")
     void bonus_stabilityMeasurement() {
         ChatModel deterministicModel = OllamaChatModel.builder()
