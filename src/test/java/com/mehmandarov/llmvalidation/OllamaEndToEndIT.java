@@ -6,6 +6,10 @@ import com.mehmandarov.llmvalidation.chapter2_guardrails.CanaryTokenGuardrail;
 import com.mehmandarov.llmvalidation.chapter2_guardrails.PiiGuardrail;
 import com.mehmandarov.llmvalidation.chapter2_guardrails.PromptInjectionGuardrail;
 import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
+import com.mehmandarov.llmvalidation.chapter3_validation.InvoiceCalculatorTool;
+import com.mehmandarov.llmvalidation.chapter3_validation.ExpressionEvaluator;
+import com.mehmandarov.llmvalidation.chapter3_validation.FormulaGenerator;
+import com.mehmandarov.llmvalidation.chapter3_validation.ToolAwareInvoiceExtractor;
 import com.mehmandarov.llmvalidation.chapter4_correction.CorrectiveExtractor;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
@@ -28,6 +32,7 @@ import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
 
@@ -208,12 +213,87 @@ class OllamaEndToEndIT {
         // The LLM may blindly echo $5000 (business error) or may "fix" the math itself — interesting either way!
     }
 
+    @Test
+    @Order(7)
+    @DisplayName("Ch3 · Tool calling — LLM uses a calculator instead of guessing math")
+    void chapter3_toolCallingWithRealModel() {
+        // Wire the tool into the extractor — the LLM can call calculateTotal() instead of guessing
+        InvoiceCalculatorTool calculator = new InvoiceCalculatorTool();
+        ToolAwareInvoiceExtractor extractor = AiServices.builder(ToolAwareInvoiceExtractor.class)
+                .chatModel(ollamaModel)
+                .tools(calculator)
+                .build();
+
+        String invoiceWithLineItems = """
+            INVOICE #INV-TOOL-001
+            Date: 2024-06-15
+            
+            Items:
+            - Consulting Services: $750.00
+            - Software License: $250.00
+            - Support Package: $125.50
+            
+            Currency: USD
+            """;
+
+        log.info("🧮 Asking model to extract invoice WITH tool access...");
+        try {
+            ExtractedInvoice result = extractor.extract(invoiceWithLineItems);
+            log.info("📋 Extracted: invoice={}, amount={}, currency={}",
+                    result.invoiceNumber(), result.amount(), result.currency());
+
+            // If the model used the tool, the total will be exactly 1125.50
+            // If it guessed, it might be different — that's the demo point!
+            if (result.amount() != null && result.amount().compareTo(new java.math.BigDecimal("1125.50")) == 0) {
+                log.info("✅ Model used the tool — total is exactly $1125.50 (deterministic)");
+            } else {
+                log.warn("⚠️ Model may not have used the tool — amount is {} (expected 1125.50)", result.amount());
+                log.warn("   This is why we validate: even with tools, verify the result.");
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Tool-calling extraction failed: {}", e.getMessage());
+            log.warn("   Some small models don't support function calling well. That's the reality.");
+        }
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("Ch3 · Code execution — LLM generates formula, Java evaluates it")
+    void chapter3_codeExecutionWithRealModel() {
+        FormulaGenerator generator = AiServices.create(FormulaGenerator.class, ollamaModel);
+        ExpressionEvaluator evaluator = new ExpressionEvaluator();
+
+        String lineItems = "Consulting $750, License $250, Support $125.50";
+        BigDecimal expectedTotal = new BigDecimal("1125.50");
+
+        log.info("🧮 Asking model to GENERATE formula (not compute the answer)...");
+        try {
+            String formula = generator.generateFormula(lineItems);
+            log.info("📝 LLM generated formula: '{}'", formula);
+
+            BigDecimal result = evaluator.evaluate(formula);
+            log.info("🧮 Java evaluated: {} = {}", formula, result);
+
+            if (evaluator.verify(formula, expectedTotal)) {
+                log.info("✅ Formula is correct — LLM wrote it, Java executed it deterministically.");
+            } else {
+                log.warn("⚠️ Formula evaluated to {} but expected {}. The generation was wrong, but we caught it!", result, expectedTotal);
+                log.warn("   This is the point: a wrong formula is easier to debug than a wrong number.");
+            }
+        } catch (IllegalArgumentException e) {
+            log.warn("⚠️ LLM generated an unsafe or unparseable expression: {}", e.getMessage());
+            log.warn("   The safety net caught it — no code injection possible.");
+        } catch (Exception e) {
+            log.warn("⚠️ Code execution test failed: {}", e.getMessage());
+        }
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  Chapter 4 — The Bargaining: self-correction loop with a real model
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(7)
+    @Order(9)
     @DisplayName("Ch4 · Self-correction loop improves results")
     void chapter4_selfCorrectionWithRealModel() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -239,7 +319,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(8)
+    @Order(10)
     @DisplayName("Ch5 · Consensus across same model at different temperatures")
     void chapter5_consensusSameModelDifferentTemperatures() {
         // Use the same model at different temperatures to simulate diversity
@@ -264,7 +344,7 @@ class OllamaEndToEndIT {
     }
 
     @Test
-    @Order(9)
+    @Order(11)
     @DisplayName("Ch5 · Consensus across DIFFERENT models (true multi-model)")
     void chapter5_consensusDifferentModels() {
         // True multi-model consensus: different architectures, same question
@@ -311,7 +391,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(10)
+    @Order(12)
     @DisplayName("🪞 Bonus · Mirror Test — does the extraction survive a round trip?")
     void chapter6_mirrorTestWithRealModel() {
         // Step 1: Extract structured data from the clean invoice
@@ -346,7 +426,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(11)
+    @Order(13)
     @DisplayName("🎲 Bonus · Same input, 3 extractions — observe the variance")
     void bonus_demonstrateNonDeterminism() {
         // Use temperature > 0 so the model actually varies
@@ -377,7 +457,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(12)
+    @Order(14)
     @DisplayName("🎲 Bonus · Seed-based reproducibility — testing the model's determinism promise")
     void bonus_seedReproducibility() {
         // Build two identical models with the same seed
@@ -444,7 +524,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(13)
+    @Order(15)
     @DisplayName("🎲 Bonus · Stability analysis — measuring variance across repeated runs")
     void bonus_stabilityMeasurement() {
         ChatModel deterministicModel = OllamaChatModel.builder()

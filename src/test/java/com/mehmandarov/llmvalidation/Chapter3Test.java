@@ -3,7 +3,15 @@ package com.mehmandarov.llmvalidation;
 import com.mehmandarov.llmvalidation.model.ExtractedInvoice;
 import com.mehmandarov.llmvalidation.model.ValidationResult;
 import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
+import com.mehmandarov.llmvalidation.chapter3_validation.InvoiceCalculatorTool;
+import com.mehmandarov.llmvalidation.chapter3_validation.ExpressionEvaluator;
 import com.mehmandarov.llmvalidation.chapter3_validation.OutputNormalizer;
+import com.mehmandarov.llmvalidation.chapter3_validation.ToolAwareInvoiceExtractor;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.service.AiServices;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +20,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Chapter 3: The Hallucination (Deterministic Validation)")
 class Chapter3Test {
@@ -218,5 +230,122 @@ class Chapter3Test {
         assertThat(normalized.items()).hasSize(1);
         assertThat(normalized.items().getFirst().description()).isEqualTo("Consulting Services");
         assertThat(normalized.items().getFirst().unitPrice().scale()).isEqualTo(2);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Function Calling / Tool Use — "Don't let the LLM do math"
+    //  Instead of asking the LLM to compute totals or tax, we give it
+    //  deterministic Java tools. The LLM decides WHEN to compute;
+    //  the computation itself is pure code, zero hallucination risk.
+    // ─────────────────────────────────────────────────────────────────────
+
+    private final InvoiceCalculatorTool calculator = new InvoiceCalculatorTool();
+
+    @Test
+    @DisplayName("tool: calculateTotal sums line items deterministically")
+    void toolShouldCalculateTotal() {
+        List<BigDecimal> prices = List.of(
+                new BigDecimal("100.00"),
+                new BigDecimal("200.00"),
+                new BigDecimal("50.50"));
+
+        BigDecimal total = calculator.calculateTotal(prices);
+
+        // Pure Java math — always correct, unlike an LLM guess
+        assertThat(total).isEqualByComparingTo("350.50");
+    }
+
+    @Test
+    @DisplayName("tool: calculateTax computes tax deterministically")
+    void toolShouldCalculateTax() {
+        BigDecimal subtotal = new BigDecimal("1000.00");
+        BigDecimal taxRate = new BigDecimal("21.0"); // 21% VAT
+
+        BigDecimal tax = calculator.calculateTax(subtotal, taxRate);
+
+        assertThat(tax).isEqualByComparingTo("210.00");
+    }
+
+    @Test
+    @DisplayName("tool: calculateTotal handles empty list")
+    void toolShouldHandleEmptyList() {
+        BigDecimal total = calculator.calculateTotal(List.of());
+
+        assertThat(total).isEqualByComparingTo("0.00");
+    }
+
+    @Test
+    @DisplayName("tool-aware extractor can be wired with InvoiceCalculatorTool")
+    void toolAwareExtractorCanBeWired() {
+        // Arrange — mock model returns valid JSON (in a real scenario the model
+        // would call calculateTotal via function calling, but we verify the wiring compiles)
+        ChatModel model = mock(ChatModel.class);
+        String json = """
+            { "invoiceNumber": "INV-001", "date": "2024-03-21", "amount": 350.50, "currency": "USD" }
+            """;
+        ChatResponse response = ChatResponse.builder().aiMessage(AiMessage.from(json)).build();
+        when(model.chat(any(List.class))).thenReturn(response);
+        when(model.chat(any(ChatRequest.class))).thenReturn(response);
+
+        // Act — wire the tool into the extractor
+        ToolAwareInvoiceExtractor extractor = AiServices.builder(ToolAwareInvoiceExtractor.class)
+                .chatModel(model)
+                .tools(new InvoiceCalculatorTool())
+                .build();
+
+        ExtractedInvoice result = extractor.extract("Items: Widget $100, Gadget $200, Cable $50.50");
+
+        // Assert — the tool is available; in a live demo the model would call it
+        assertThat(result).isNotNull();
+        assertThat(result.amount()).isEqualByComparingTo("350.50");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Code Execution — "Let the LLM write the formula, we execute it"
+    //  The LLM generates an arithmetic expression (e.g. "750 + 250 + 125.50"),
+    //  and we evaluate it deterministically. The generation is probabilistic,
+    //  but the execution is not. And a wrong formula is easier to spot than
+    //  a wrong number.
+    // ─────────────────────────────────────────────────────────────────────
+
+    private final ExpressionEvaluator evaluator = new ExpressionEvaluator();
+
+    @Test
+    @DisplayName("code exec: evaluates LLM-generated expression deterministically")
+    void codeExecShouldEvaluateExpression() {
+        // Imagine the LLM extracted line items and generated this formula:
+        String llmFormula = "750 + 250 + 125.50";
+
+        BigDecimal result = evaluator.evaluate(llmFormula);
+
+        // Pure Java math — always 1125.50, even if the LLM generated the formula
+        assertThat(result).isEqualByComparingTo("1125.50");
+    }
+
+    @Test
+    @DisplayName("code exec: verifies LLM's claimed total matches the formula")
+    void codeExecShouldVerifyClaimedTotal() {
+        String formula = "100 + 200 + 50";
+        BigDecimal correctClaim = new BigDecimal("350.00");
+        BigDecimal wrongClaim = new BigDecimal("400.00");
+
+        assertThat(evaluator.verify(formula, correctClaim)).isTrue();
+        assertThat(evaluator.verify(formula, wrongClaim)).isFalse();
+    }
+
+    @Test
+    @DisplayName("code exec: rejects unsafe expressions (no code injection)")
+    void codeExecShouldRejectUnsafeInput() {
+        // An attacker tries to sneak code into the expression
+        assertThatThrownBy(() -> evaluator.evaluate("System.exit(0)"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("unsafe characters");
+    }
+
+    @Test
+    @DisplayName("code exec: handles operator precedence correctly")
+    void codeExecShouldRespectPrecedence() {
+        // 100 + 200 * 3 should be 700, not 900
+        assertThat(evaluator.evaluate("100 + 200 * 3")).isEqualByComparingTo("700.00");
     }
 }

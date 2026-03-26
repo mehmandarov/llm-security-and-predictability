@@ -58,7 +58,11 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
 *   **Chapter 3: The Hallucination (Deterministic Validation)**
     *   `StrictValidator.java`: Validates schema (Jakarta Beans) and business logic (Math, Dates) *deterministically*.
     *   `OutputNormalizer.java`: Normalizes LLM output (amounts → 2 decimal places, currency → uppercase, strings trimmed) so "close enough" becomes identical. Pure Java, no LLM.
-    *   *Lesson:* Trust code, not the model.
+    *   `InvoiceCalculatorTool.java`: `@Tool`-annotated methods (`calculateTotal`, `calculateTax`) — the LLM decides *when* to compute, but the math is deterministic Java code.
+    *   `ToolAwareInvoiceExtractor.java`: Extractor wired with tools via `AiServices.builder().tools()`.
+    *   `ExpressionEvaluator.java`: Safe arithmetic evaluator — the LLM generates a formula, Java executes it. Rejects code injection attempts.
+    *   `FormulaGenerator.java`: Asks the LLM to output an arithmetic expression instead of a computed answer.
+    *   *Lesson:* Trust code, not the model. Don't let the LLM do math — give it a calculator, or let it write the formula and execute it yourself.
 *   **Chapter 4: The Bargaining (Self-Correction)**
     *   `CorrectiveExtractor.java`: Feeds validation errors back to the LLM for a second attempt.
     *   *Lesson:* Turn runtime exceptions into successful transactions.
@@ -84,7 +88,7 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
 
 *   `Chapter1Test` – `Chapter6Test`: Unit tests per chapter, mocked models, fast.
 *   `LLMValidationTalkTest.java`: Single-file walkthrough of the entire talk (all chapters in order).
-*   `OllamaEndToEndIT.java`: Live integration tests against a real Ollama instance (13 tests, `mvn verify`).
+*   `OllamaEndToEndIT.java`: Live integration tests against a real Ollama instance (15 tests, `mvn verify`).
 *   `InvoiceTestData.java`: Shared test data — clean invoices, injection attacks, `SANDWICH_BREAKOUT`, PII leaks, etc.
 
 ---
