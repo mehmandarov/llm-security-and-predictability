@@ -88,8 +88,8 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
 
 *   `Chapter1Test` – `Chapter6Test`: Unit tests per chapter, mocked models, fast.
 *   `LLMValidationTalkTest.java`: Single-file walkthrough of the entire talk (all chapters in order).
-*   `OllamaEndToEndIT.java`: Live integration tests against a real Ollama instance (15 tests, `mvn verify`).
-*   `InvoiceTestData.java`: Shared test data — clean invoices, injection attacks, `SANDWICH_BREAKOUT`, PII leaks, etc.
+*   `OllamaEndToEndIT.java`: Live integration tests against a real Ollama instance (23 tests, `mvn verify`).
+*   `InvoiceTestData.java`: Shared test data — clean invoices, injection attacks, `SANDWICH_BREAKOUT`, `PROMPT_STUFFING`, `MESSY_OCR`, `AMBIGUOUS_DATE`, PII leaks, etc.
 
 ---
 *Note: Common models and shared code live in `com.mehmandarov.llmvalidation.model`.*
