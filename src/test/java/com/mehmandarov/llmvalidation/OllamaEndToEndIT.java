@@ -60,7 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Prerequisites:</p>
  * <ul>
  *   <li>Ollama running locally on port 11434</li>
- *   <li>{@code ollama pull gemma3:1b} (small &amp; fast for demos)</li>
+ *   <li>{@code ollama pull gemma4:e2b} (small &amp; fast for demos)</li>
  * </ul>
  *
  * <p>If Ollama is not reachable the entire class is automatically skipped.</p>
@@ -73,7 +73,7 @@ class OllamaEndToEndIT {
     private static final Logger log = LoggerFactory.getLogger(OllamaEndToEndIT.class);
 
     private static final String OLLAMA_URL = "http://localhost:11434";
-    private static final String MODEL = "gemma3:1b";
+    private static final String MODEL = "gemma4:e2b";
     private static final Duration TIMEOUT = Duration.ofSeconds(60);
 
     private static ChatModel ollamaModel;
@@ -525,7 +525,7 @@ class OllamaEndToEndIT {
     @DisplayName("Ch5 · Consensus across DIFFERENT models (true multi-model)")
     void chapter5_consensusDifferentModels() {
         // True multi-model consensus: different architectures, same question
-        String modelA = "gemma3:1b";
+        String modelA = "gemma4:e2b";
         String modelB = "llama3.2:1b";
 
         ChatModel gemma = OllamaChatModel.builder()

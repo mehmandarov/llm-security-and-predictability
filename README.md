@@ -13,7 +13,7 @@ LLMs are probabilistic by nature — great for creativity, but dangerous for bus
 *   **Ollama** (optional — for end-to-end integration tests)
     ```bash
     # Install: https://ollama.com
-    ollama pull gemma3:1b
+    ollama pull gemma4:e2b
     ollama pull llama3.2:1b    # optional — enables true multi-model consensus demo
     ```
 
@@ -79,7 +79,7 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
 ## Key Technologies
 
 *   **LangChain4j**: For LLM integration and AI Service interfaces.
-*   **Ollama**: Local LLM inference for end-to-end tests (gemma3:1b, llama3.2:1b).
+*   **Ollama**: Local LLM inference for end-to-end tests (gemma4:e2b, llama3.2:1b).
 *   **Jakarta Validation**: For schema and constraint validation.
 *   **JUnit 5 & Mockito**: For unit testing the patterns.
 *   **Maven Failsafe**: For integration tests (`mvn verify`).
