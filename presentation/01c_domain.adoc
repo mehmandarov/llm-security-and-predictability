@@ -1,0 +1,30 @@
+=== The Domain — Invoice Extraction
+
+---
+
+```
+Raw Invoice Text  ──►  LLM  ──►  ExtractedInvoice (JSON)
+                                  ├── invoiceNumber
+                                  ├── date
+                                  ├── amount
+                                  ├── currency
+                                  ├── vendorName
+                                  └── items[]
+                                       ├── description
+                                       ├── quantity
+                                       └── unitPrice
+```
+
+==== Why Invoices?
+
+* Simple enough to fit in your head
+* Complex enough to hallucinate (dates, math, currencies)
+* Real-world use case — every company has one
+
+_One domain. Five layers of defense. The chaos comes from the model, not the problem._
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:01b_overview.adoc[⬅️ Overview] /
+link:02_honeymoon.adoc[➡️ Ch1 — The Honeymoon]

@@ -1,0 +1,29 @@
+=== Ch3 — Normalizing the Chaos
+==== Making "Close Enough" Identical
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter3_validation/OutputNormalizer.java[OutputNormalizer.java]
+
+* The LLM says `$1,500.00 USD` one time and `1500 usd` the next
+* Different strings? Yes. Same invoice? Yes.
+
+==== Normalization Rules (Pure Java, No LLM)
+
+[cols="1,2,2"]
+|===
+| Field | Before | After
+
+| Date | `"Jan 15, 2024"` | `2024-01-15`
+| Amount | `$1,500.00` | `1500.00`
+| Currency | `usd` | `USD`
+| Strings | `"  INV-001  "` | `INV-001`
+|===
+
+_"The LLM said '$1,500.00 USD' one time and '1500 USD' the next. Different? Not after normalization."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04_hallucination.adoc[⬅️ Validation] /
+link:04c_tool_calling.adoc[➡️ Tool Calling]

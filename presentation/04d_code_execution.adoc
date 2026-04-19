@@ -1,0 +1,36 @@
+=== Ch3 — Code Execution
+==== Let the LLM Write the Formula, We Execute It
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter3_validation/ExpressionEvaluator.java[ExpressionEvaluator.java]
+
+[source,java]
+----
+public class ExpressionEvaluator {
+
+    // Only allow digits, decimal points, whitespace, and +, -, *, /
+    private static final Pattern SAFE_EXPRESSION =
+            Pattern.compile("^[\\d.+\\-*/ ()]+$");
+
+    public BigDecimal evaluate(String expression) {
+        if (!SAFE_EXPRESSION.matcher(expression.trim()).matches()) {
+            throw new IllegalArgumentException("Unsafe expression: " + expression);
+        }
+        return parseExpression(expression);  // recursive-descent parser
+    }
+
+    public boolean verify(String expression, BigDecimal claimedTotal) {
+        BigDecimal actual = evaluate(expression);
+        return actual.compareTo(claimedTotal) == 0;
+    }
+}
+----
+
+_"The generation is probabilistic — the LLM might get the formula wrong. But the execution is deterministic. And a wrong formula is easier to spot than a wrong number."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04c_tool_calling.adoc[⬅️ Tool Calling] /
+link:04e_two_approaches.adoc[➡️ Two Approaches, One Goal]

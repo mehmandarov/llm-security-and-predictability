@@ -1,0 +1,53 @@
+=== 🎲 Taming the Chaos: Security and Predictability in LLM-Powered Applications
+==== LangChain4j + Ollama
+===== Table of Contents
+
+* link:00_title.adoc[🎲 Taming the Chaos: Security and Predictability in LLM-Powered Applications]
+* link:00b_about_me.adoc[About Me]
+* link:01_intro.adoc[Introduction]
+* link:01b_overview.adoc[What We'll Cover — 5 Stages of LLM Grief (+ Bonus)]
+* link:01c_domain.adoc[The Domain — Invoice Extraction]
+
+*Ch1 — The Honeymoon*
+
+* link:02_honeymoon.adoc[Ch1 — The Honeymoon]
+
+*Ch2 — The Attack*
+
+* link:03_attack_overview.adoc[Ch2 — The Attack]
+* link:03b_attack_guardrails.adoc[Ch2 — Layer 1: Simple Guardrails]
+* link:03c_attack_canary.adoc[Ch2 — Layer 2: The Canary Trap]
+* link:03d_attack_output_format.adoc[Ch2 — Layer 3: Output Format Guardrail]
+* link:03e_attack_sandwiching.adoc[Ch2 — Layer 4: Delimiter Sandwiching]
+* link:03f_attack_bouncer.adoc[Ch2 — Layer 5: The Bouncer]
+* link:03g_attack_fortified.adoc[Layer 6: The Fortified Extractor]
+
+*Ch3 — The Hallucination*
+
+* link:04_hallucination.adoc[Ch3 — The Hallucination]
+* link:04b_normalizer.adoc[Ch3 — Normalizing the Chaos]
+* link:04c_tool_calling.adoc[Ch3 — Function Calling]
+* link:04d_code_execution.adoc[Ch3 — Code Execution]
+* link:04e_two_approaches.adoc[Two Approaches, One Goal]
+
+*Ch4 — The Bargaining*
+
+* link:05_bargaining.adoc[Ch4 — The Bargaining]
+
+*Ch5 — The Council*
+
+* link:06_council.adoc[Ch5 — The Council]
+* link:06b_stability.adoc[Ch5 — Measuring the Chaos]
+* link:06c_safe_pipeline.adoc[Ch5 — The Safe Extraction Pipeline]
+
+*Bonus — The Mirror Test*
+
+* link:07_mirror.adoc[Bonus — The Mirror Test]
+
+*Wrap-Up*
+
+* link:08_summary.adoc[Summary — Tamed Chaos]
+* link:09_thank_you.adoc[Thank You! 🎉]
+
+---
+===== Rustam Mehmandarov — link:https://rustam.no[@rustam.no]

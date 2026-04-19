@@ -1,0 +1,37 @@
+=== Ch5 — Measuring the Chaos
+==== Stability Analysis & Deterministic Seeds
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter5_consensus/StabilityAnalyzer.java[StabilityAnalyzer.java]
+
+* *Stability* = agreement across repeated runs of the *same* model
+* Run extraction N times → for each field, compute agreement = count(mode) / N
+
+==== Putting a Number on the Chaos
+
+[%autowidth,cols="3,2,5"]
+|===
+| Setting | Expected Stability | Takeaway
+
+| `temperature=0.0` | High | As good as it gets — but not 100%
+| `temperature=0.8` | Low | This is the chaos we're taming
+| `temperature=0.0 + seed=42` | Very high | The model's determinism promise
+|===
+
+_Run the IT tests yourself (`mvn verify`) to see your model's actual numbers._
+
+==== Seeds
+
+* A *seed* is a number that initializes the random number generator inside the model: same seed = same sequence of "random" choices
+* Ollama supports a `seed` parameter
+* `temperature=0` + `seed=42` → should yield identical results
+* _"The model promises: same seed = same answer. Let's test that promise. Spoiler: it's complicated."_
+
+_"Don't guess if your model is deterministic. Measure it."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:06_council.adoc[⬅️ Consensus] /
+link:06c_safe_pipeline.adoc[➡️ Safe Pipeline]

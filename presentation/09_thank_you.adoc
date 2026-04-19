@@ -1,0 +1,35 @@
+=== Thank You! 🎉
+
+---
+
+==== Code & Slides
+
+_Code, slides, and all tests are available here:_
+
+https://github.com/mehmandarov/llm-validation-and-predictability
+
+==== Tech Stack
+
+* *Java 21* (LTS) • *LangChain4j* • *Ollama*
+* *Jakarta Validation* • *JUnit 5 & Mockito*
+* *Maven Failsafe* for integration tests
+
+==== Running the Demo
+
+```bash
+# Mocked tests (fast, no LLM needed)
+mvn test
+
+# Live tests against Ollama (the real chaos)
+ollama serve && ollama pull gemma4:e2b
+mvn verify
+```
+
+==== Questions?
+
+===== Rustam Mehmandarov — link:https://rustam.no[@rustam.no]
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:08_summary.adoc[⬅️ Summary]

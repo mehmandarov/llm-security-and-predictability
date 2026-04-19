@@ -1,0 +1,42 @@
+=== Ch5 — The Council
+==== Multi-Model Consensus — Democracy for AI
+
+---
+
+*The Concept:* "One model can hallucinate. Three models agreeing is evidence."
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter5_consensus/MultiModelConsensus.java[MultiModelConsensus.java]
+
+[source,java]
+----
+public class MultiModelConsensus {
+
+    public ConsensusResult runConsensus(String text) {
+        List<ExtractedInvoice> results = new ArrayList<>();
+
+        for (ChatModel model : models) {
+            ExtractedInvoice invoice = extractFromModel(model, text);
+            results.add(invoice);
+        }
+
+        // Majority vote on each field
+        String invoiceNumber = majorityVote(results.stream()
+                .map(ExtractedInvoice::invoiceNumber).toList());
+        BigDecimal amount = majorityVoteAmount(results.stream()
+                .map(ExtractedInvoice::amount).toList());
+
+        double confidence = (double) agreeing / results.size();
+        return new ConsensusResult(confidence >= 0.6, consensus, confidence);
+    }
+}
+----
+
+* Same model at different temperatures — simulated diversity
+* *Different* architectures (gemma + llama) — stronger evidence
+* _"One model says $1,200, another says $1,200, the third says $1,000. Majority wins."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:05_bargaining.adoc[⬅️ The Bargaining] /
+link:06b_stability.adoc[➡️ Stability Analysis]

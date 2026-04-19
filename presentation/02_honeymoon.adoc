@@ -1,0 +1,37 @@
+=== Ch1 — The Honeymoon
+==== Naive Implementation — "It Just Works!"
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter1_basics/SimpleInvoiceExtractor.java[SimpleInvoiceExtractor.java]
+
+[source,java]
+----
+public interface SimpleInvoiceExtractor {
+
+    @SystemMessage("You are a helpful assistant that extracts invoice data.")
+    @UserMessage("Extract data from this text: {{text}}")
+    ExtractedInvoice extract(@V("text") String text);
+}
+----
+
+* No implementation needed — `AiServices.create()` generates a proxy at runtime
+* Prompt in → structured JSON out
+* It works *perfectly* on our golden test data. We ship to prod.
+
+==== The Problem
+
+* Day 1: It works.
+* Day 2: It *mostly* works.
+* Day 3: "Why did the LLM process an invoice from the year 2050?"
+
+[NOTE]
+====
+*Structured Output is not Validation.* It just means you get a well-formatted lie.
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:01c_domain.adoc[⬅️ The Domain] /
+link:03_attack_overview.adoc[➡️ Ch2 — The Attack]

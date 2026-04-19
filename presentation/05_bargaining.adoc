@@ -1,0 +1,47 @@
+=== Ch4 — The Bargaining
+==== Self-Correction — Feed Errors Back to the LLM
+
+---
+
+*The Idea:* "If you catch a junior developer making a mistake, you don't fire them. You tell them what's wrong and ask them to fix it."
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter4_correction/CorrectiveExtractor.java[CorrectiveExtractor.java]
+
+[source,java]
+----
+public class CorrectiveExtractor {
+
+    public ExtractedInvoice extract(String text) {
+        ExtractedInvoice invoice = extractor.extract(text);
+        ValidationResult result = validator.validate(invoice);
+
+        int attempts = 0;
+        while (!result.isValid() && attempts < maxRetries) {
+            attempts++;
+            String feedback = buildFeedbackPrompt(text, invoice, result);
+            invoice = extractor.extract(feedback);    // ← re-prompt with errors
+            result = validator.validate(invoice);
+        }
+        return invoice;
+    }
+}
+----
+
+==== The Feedback Loop
+
+```
+Extract  →  Validate  →  Errors?  →  Re-prompt with errors  →  Validate again
+  ↑                                         │
+  └─────────────────────────────────────────┘
+                (max N retries)
+```
+
+* Attempt 1: Fail (future date). Feedback: "Date must be in the past."
+* Attempt 2: Success.
+* Configurable max retries — don't let the loop run forever.
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04d_code_execution.adoc[⬅️ Code Execution] /
+link:06_council.adoc[➡️ Ch5 — The Council]

@@ -1,0 +1,28 @@
+=== Ch2 — The Attack
+==== Security & Guardrails — 6 Layers of Defense
+
+---
+
+*Context:* Day 2. The security team calls. Someone pastes "Ignore all previous instructions" into the invoice field.
+
+```
+User Input
+  │
+  ├─ Layer 1: Simple Guardrails (Blacklist, PII, Length)
+  ├─ Layer 2: Canary Trap (Secret Tripwire)
+  ├─ Layer 3: Output Format (Braces or Bust)
+  ├─ Layer 4: Delimiter Sandwiching (Data ≠ Instructions)
+  ├─ Layer 5: The Bouncer (Intent Classification)
+  └─ Layer 6: The Fortified Extractor (Combined Stack)
+  │
+  ▼
+LLM (only clean input reaches here)
+```
+
+_Never trust the input. Never trust the output. Defense in depth._
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:02_honeymoon.adoc[⬅️ The Honeymoon] /
+link:03b_attack_guardrails.adoc[➡️ Simple Guardrails]

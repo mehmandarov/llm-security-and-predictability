@@ -1,0 +1,15 @@
+=== Introduction
+==== The Promise vs. The Reality
+
+---
+
+* "Raise your hand if you've ever had an LLM give you a perfect answer... and then fail completely on the exact same question five minutes later."
+* We are building business logic on top of a *probabilistic engine*.
+* Today isn't about making LLMs "smarter." It's about making our *systems* robust enough to handle their responses safely.
+* *Thesis*: From security to predictability — practical, layered defenses.
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:00b_about_me.adoc[⬅️ About Me] /
+link:01b_overview.adoc[➡️ What We'll Cover]

@@ -1,0 +1,41 @@
+=== Ch2 — Layer 1: Simple Guardrails
+==== Blacklist, PII Redaction, Input Length
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter2_guardrails/PromptInjectionGuardrail.java[PromptInjectionGuardrail.java]
+
+[source,java]
+----
+public class PromptInjectionGuardrail implements InputGuardrail {
+
+    private static final List<String> BLACKLIST = List.of(
+        "ignore previous instructions",
+        "system override",
+        "delete database",
+        "reveal system prompt"
+    );
+
+    private InputGuardrailResult checkBlacklist(String text) {
+        String lower = text.toLowerCase();
+        for (String phrase : BLACKLIST) {
+            if (lower.contains(phrase)) {
+                return fatal("Security Violation: Potential prompt injection detected.");
+            }
+        }
+        return success();
+    }
+}
+----
+
+* *Blacklists* catch "ignore instructions" attacks
+* *Length checks* block context-window padding ("prompt stuffing")
+* *PII redaction* scrubs emails, SSNs, credit cards from responses
+
+_"You can't jailbreak what you can't reach. 50,000 characters for a one-page invoice? Something's wrong."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:03_attack_overview.adoc[⬅️ Attack Overview] /
+link:03c_attack_canary.adoc[➡️ Canary Trap]

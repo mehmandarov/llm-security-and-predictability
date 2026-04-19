@@ -1,0 +1,47 @@
+=== Bonus — The Mirror Test
+==== Synthetic Verification — Catching What's Missing
+
+---
+
+*The Final Boss:* How do you know what's *missing* if you don't have the answer key?
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter6_bonus_mirror/MirrorVerifier.java[MirrorVerifier.java]
+
+==== The Process
+
+```
+Original Text  ──►  Extraction  ──►  JSON
+                                       │
+                                       ▼
+                                  The Mirror: LLM writes a summary from JSON only
+                                       │
+                                       ▼
+                              Compare Summary vs. Original
+                                       │
+                                       ▼
+                              Faithfulness Score (0–100%)
+```
+
+[source,java]
+----
+public class MirrorVerifier {
+
+    public VerificationResult verify(String originalText, String extractedJson) {
+        // Phase 1: Reconstruct a summary from JSON alone
+        String summary = reconstructor.reconstruct(extractedJson);
+
+        // Phase 2: Compare summary vs original — score faithfulness
+        double score = checker.checkFaithfulness(originalText, summary);
+
+        return new VerificationResult(score, summary);
+    }
+}
+----
+
+_"If the summary is missing the shipping fee, and the original had it… your JSON is broken."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:06c_safe_pipeline.adoc[⬅️ Safe Pipeline] /
+link:08_summary.adoc[➡️ Summary]

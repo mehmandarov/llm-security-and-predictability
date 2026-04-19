@@ -1,0 +1,58 @@
+=== Ch5 — The Full Safe Extraction Pipeline
+==== The Capstone — Fail Safely and Predictably
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter5_consensus/SafeExtractionPipeline.java[SafeExtractionPipeline.java]
+
+[source,java]
+----
+public class SafeExtractionPipeline {
+
+    public ExtractionOutcome process(String text) {
+        try {
+            ExtractedInvoice invoice = correctiveExtractor.extract(text);
+            ValidationResult validation = validator.validate(invoice);
+
+            if (validation.isValid()) {
+                return new ExtractionOutcome(Status.ACCEPTED, invoice, null);
+            } else {
+                return new ExtractionOutcome(Status.NEEDS_REVIEW, invoice, reason);
+            }
+        } catch (Exception e) {
+            return new ExtractionOutcome(Status.REJECTED, null, e.getMessage());
+        }
+    }
+
+    public enum Status { ACCEPTED, NEEDS_REVIEW, REJECTED }
+}
+----
+
+==== The Full Chain
+
+```
+Guard (Ch2)
+  │
+  ▼
+Extract (Ch1)
+  │
+  ▼
+Validate (Ch3)
+  │
+  ▼
+Self-Correct (Ch4)
+  │
+  ▼
+Typed Verdict
+  ├── ACCEPTED     → process automatically
+  ├── NEEDS_REVIEW → route to human
+  └── REJECTED     → reject entirely
+```
+
+_"We didn't make the LLM perfect. We built a system that tells you when it's not."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:06b_stability.adoc[⬅️ Stability] /
+link:07_mirror.adoc[➡️ Bonus — The Mirror Test]

@@ -1,0 +1,41 @@
+=== Ch2 — Layer 3: Output Format Guardrail
+==== Braces or Bust
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter2_guardrails/OutputFormatGuardrail.java[OutputFormatGuardrail.java]
+
+[source,java]
+----
+public class OutputFormatGuardrail implements OutputGuardrail {
+
+    @Override
+    public OutputGuardrailResult validate(AiMessage responseFromLLM) {
+        String text = responseFromLLM.text().trim();
+
+        if (!text.contains("{") || !text.contains("}")) {
+            return fatal("Response does not contain JSON.");
+        }
+
+        // Balanced braces check
+        long open = text.chars().filter(c -> c == '{').count();
+        long close = text.chars().filter(c -> c == '}').count();
+        if (open != close) {
+            return fatal("Unbalanced JSON braces.");
+        }
+
+        return OutputGuardrailResult.success();
+    }
+}
+----
+
+* A hijacked model outputs prose, apologies, or the canary — none of which is JSON
+* If it's not JSON, it's not an invoice
+
+_"The model was hijacked and started writing an essay. This guardrail says: braces or bust."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:03c_attack_canary.adoc[⬅️ Canary Trap] /
+link:03e_attack_sandwiching.adoc[➡️ Sandwiching]

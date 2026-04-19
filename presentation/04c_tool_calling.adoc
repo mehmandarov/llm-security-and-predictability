@@ -1,0 +1,33 @@
+=== Ch3 — Function Calling
+==== Don't Let the LLM Do Math
+
+---
+
+*The Problem:* "The LLM says 750 + 250 + 125.50 = 1,200. It's wrong. It's always wrong."
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter3_validation/InvoiceCalculatorTool.java[InvoiceCalculatorTool.java]
+
+[source,java]
+----
+public class InvoiceCalculatorTool {
+
+    @Tool("Calculates the total from a list of amounts")
+    public BigDecimal calculateTotal(@P("amounts") List<BigDecimal> amounts) {
+        return amounts.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+}
+----
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter3_validation/ToolAwareInvoiceExtractor.java[ToolAwareInvoiceExtractor.java] — wired via `AiServices.builder().tools(new InvoiceCalculatorTool())`
+
+* The LLM decides *when* to compute — the computation is pure Java
+* Zero hallucination risk for arithmetic
+
+_"The LLM picks the tool; Java does the math."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04b_normalizer.adoc[⬅️ Normalizer] /
+link:04d_code_execution.adoc[➡️ Code Execution]

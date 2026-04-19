@@ -1,0 +1,44 @@
+=== Ch3 — The Hallucination
+==== Deterministic Validation — Trust Code, Not the Model
+
+---
+
+*Context:* Day 7. Accounting is mad. The LLM processed an invoice from the year 2050.
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter3_validation/StrictValidator.java[StrictValidator.java] — three layers, zero LLM:
+
+[source,java]
+----
+public class StrictValidator {
+
+    public ValidationResult validate(ExtractedInvoice invoice) {
+        List<ValidationError> errors = new ArrayList<>();
+
+        // Layer 1: Schema (Jakarta Bean Validation)
+        // @NotNull, @PastOrPresent — annotations on the record fields
+        Set<ConstraintViolation<ExtractedInvoice>> violations =
+                jakartaValidator.validate(invoice);
+
+        // Layer 2: Business Logic — does total = sum(items)?
+        if (calculated.compareTo(invoice.amount()) != 0) {
+            errors.add(new ValidationError("BUSINESS", "Total ≠ sum"));
+        }
+
+        // Layer 3: Pragmatic Sanity — future dates? > $10M?
+        if (invoice.date().isAfter(LocalDate.now())) {
+            errors.add(new ValidationError("TEMPORAL", "Date is in the future."));
+        }
+
+        return errors.isEmpty() ? ValidationResult.valid()
+                                : ValidationResult.invalid(errors);
+    }
+}
+----
+
+_"The LLM says the invoice is from 2050? Bean Validation says no. Pure code, zero probability."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:03g_attack_fortified.adoc[⬅️ The Fortified Extractor] /
+link:04b_normalizer.adoc[➡️ Output Normalizer]

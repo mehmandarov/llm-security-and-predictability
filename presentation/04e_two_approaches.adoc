@@ -1,0 +1,27 @@
+=== Ch3 — Two Approaches, One Goal
+==== Function Calling vs. Code Execution
+
+---
+
+[cols="1,2,2"]
+|===
+| | Function Calling | Code Execution
+
+| *Who defines the tools?* | We do | The LLM does
+| *Who calls them?* | The LLM | We do
+| *Safety net* | Tool signatures | Regex whitelist
+| *Best for* | Small, focused tool set | Simple ad-hoc arithmetic
+| *Breaks when* | Too many tools → LLM picks the wrong one | Complex logic → LLM generates broken formulas
+|===
+
+* Both keep the *execution* deterministic — only the *generation* is probabilistic
+
+
+_"Either way, the math is done by Java. The LLM just decides what to compute."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04d_code_execution.adoc[⬅️ Code Execution] /
+link:05_bargaining.adoc[➡️ Ch4 — The Bargaining]
+

@@ -1,0 +1,32 @@
+=== Summary — Tamed Chaos
+
+---
+
+==== 5 Stages of Resilience + Bonus
+
+[cols="1,3,4"]
+|===
+| # | Stage | The Common Thread
+
+| 1 | *The Honeymoon* | Structured output is not validation
+| 2 | *The Attack* | 6 layers: blacklist, canary, format, sandwiching, bouncer, full castle
+| 3 | *The Hallucination* | Jakarta Validation, normalizer, tool calling, code execution
+| 4 | *The Bargaining* | Self-correction loop — feed errors back for another attempt
+| 5 | *The Council* | Consensus, stability measurement, safe extraction pipeline
+| ⭐ | *The Mirror Test* | Round-trip verification — catch silent omissions
+|===
+
+==== Key Takeaways
+
+* *Trust code, not the model.* Deterministic validation catches what LLMs miss.
+* *Defense in depth.* No single guardrail is enough.
+* *Fail safely.* `ACCEPTED` / `NEEDS_REVIEW` / `REJECTED` — always a clear verdict.
+* *Measure the chaos.* Don't guess if your model is deterministic — quantify it.
+
+_"We didn't make the LLM perfect. We built a system that allows it to be imperfect, safely."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:07_mirror.adoc[⬅️ The Mirror Test] /
+link:09_thank_you.adoc[➡️ Thank You]
