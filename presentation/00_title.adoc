@@ -1,7 +1,18 @@
-== 🎲 Taming the Chaos: Security and Predictability in LLM-Powered Applications
 
+[cols="1,1",frame=none,grid=none]
+|===
+.^a|
+
+== 🎲 Taming the Chaos:
+==== Security and Predictability in LLM-Powered Applications
+
+---
 ===== Rustam Mehmandarov
 link:https://rustam.no[@rustam.no]
+
+.^a|
+image::assets/title_img.png[Title image,500,align="right"]
+|===
 
 ---
 
