@@ -15,15 +15,15 @@
         <!-- LangChain4j -->
         <langchain4j.version>1.13.0</langchain4j.version>
 
-        <!-- Jakarta Validation -->
-        <hibernate-validator.version>8.0.3.Final</hibernate-validator.version>
-        <jakarta-el.version>4.0.2</jakarta-el.version>
+        <!-- Jakarta Validation (spec impls — see comment in <dependencies> below) -->
+        <hibernate-validator.version>9.1.0.Final</hibernate-validator.version>
+        <expressly.version>6.0.0</expressly.version>
 
         <!-- Logging -->
         <logback.version>1.5.32</logback.version>
 
         <!-- Testing -->
-        <junit.version>5.13.4</junit.version>
+        <junit.version>6.0.3</junit.version>
         <mockito.version>5.23.0</mockito.version>
         <assertj.version>3.27.7</assertj.version>
 
@@ -57,16 +57,37 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Jakarta Validation -->
+        <!--
+            Jakarta Validation stack
+            ========================
+            Jakarta Validation (formerly Bean Validation) is a SPEC. It only defines
+            annotations (@NotNull, @Positive, @PastOrPresent, ...) and the Validator
+            API. To actually validate anything at runtime, we need an implementation:
+
+              1. hibernate-validator — the REFERENCE IMPLEMENTATION of the Jakarta
+                 Validation spec; no dependency on Hibernate ORM. It transitively pulls in
+                 jakarta.validation-api (the spec interfaces).
+
+              2. expressly — the REFERENCE IMPLEMENTATION of the Jakarta Expression
+                 Language (Jakarta EL) spec. Hibernate Validator delegates EL
+                 evaluation (e.g. message interpolation like "{min}" or
+                 "${validatedValue}") to a third-party EL engine; it does not bundle
+                 one. Without an EL impl on the classpath, Hibernate Validator logs
+                 HV000183 and falls back to a no-op interpolator.
+
+                 Note: "expressly" is the new name (since v5.0) of the Glassfish EL
+                 implementation (org.glassfish:jakarta.el). The spec itself is still
+                 called Jakarta EL — only this artifact was renamed.
+        -->
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>${hibernate-validator.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>${jakarta-el.version}</version>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+            <version>${expressly.version}</version>
         </dependency>
 
         <!-- Logging -->
