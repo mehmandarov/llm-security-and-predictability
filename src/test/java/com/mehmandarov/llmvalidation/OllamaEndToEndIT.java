@@ -187,6 +187,7 @@ class OllamaEndToEndIT {
         CanaryTokenGuardrail canaryGuardrail = new CanaryTokenGuardrail();
         String canary = canaryGuardrail.getCanaryToken();
         log.info("🐤 Canary token: {}", canary);
+        assertThat(canary).isNotBlank().startsWith("CANARY-");
 
         // Ask the model to extract from a malicious input — with the canary in the system prompt
         CanaryInvoiceExtractor extractor = AiServices.create(CanaryInvoiceExtractor.class, ollamaModel);
@@ -379,17 +380,7 @@ class OllamaEndToEndIT {
                 .tools(calculator)
                 .build();
 
-        String invoiceWithLineItems = """
-            INVOICE #INV-TOOL-001
-            Date: 2024-06-15
-            
-            Items:
-            - Consulting Services: $750.00
-            - Software License: $250.00
-            - Support Package: $125.50
-            
-            Currency: USD
-            """;
+        String invoiceWithLineItems = InvoiceTestData.INVOICE_WITH_LINE_ITEMS;
 
         log.info("🧮 Asking model to extract invoice WITH tool access...");
         try {
@@ -457,6 +448,7 @@ class OllamaEndToEndIT {
 
         ExtractedInvoice result = corrective.extract(InvoiceTestData.FUTURE_DATE_HALLUCINATION);
         log.info("📋 Final result after correction loop: {}", result);
+        assertThat(result).as("CorrectiveExtractor must always return a best-effort result").isNotNull();
 
         // Check if correction worked
         ValidationResult validation = validator.validate(result);
@@ -480,6 +472,7 @@ class OllamaEndToEndIT {
         log.info("📅 Asking model to extract an invoice with ambiguous date '01/02/2024'...");
         ExtractedInvoice result = corrective.extract(InvoiceTestData.AMBIGUOUS_DATE);
         log.info("📋 Extracted: date={}, invoice={}", result.date(), result.invoiceNumber());
+        assertThat(result).isNotNull();
 
         ValidationResult validation = validator.validate(result);
         if (validation.isValid()) {
@@ -518,6 +511,8 @@ class OllamaEndToEndIT {
             log.info("   Amount:  {}", result.consensus().amount());
         }
         // With clean input, even diverse temperatures should mostly agree
+        assertThat(result).isNotNull();
+        assertThat(result.confidence()).isBetween(0.0, 1.0);
     }
 
     @Test
@@ -558,6 +553,8 @@ class OllamaEndToEndIT {
                 log.info("   Date:    {}", result.consensus().date());
             }
             log.info("   🎯 Different architectures agreeing is stronger evidence than the same model agreeing with itself.");
+            assertThat(result).isNotNull();
+            assertThat(result.confidence()).isBetween(0.0, 1.0);
         } catch (Exception e) {
             log.warn("⚠️ Multi-model consensus failed (model may not be pulled): {}", e.getMessage());
         }
@@ -629,6 +626,7 @@ class OllamaEndToEndIT {
         if (results.size() >= 2) {
             StabilityReport report = analyzer.analyze(results);
             log.info("📊 Temperature 0.0 overall stability: {}%", (int) (report.overallStability() * 100));
+            assertThat(report.overallStability()).isBetween(0.0, 1.0);
         }
 
         // Now measure at higher temperature for comparison
@@ -652,8 +650,10 @@ class OllamaEndToEndIT {
         if (creativeResults.size() >= 2) {
             StabilityReport report = analyzer.analyze(creativeResults);
             log.info("📊 Temperature 0.8 overall stability: {}%", (int) (report.overallStability() * 100));
+            assertThat(report.overallStability()).isBetween(0.0, 1.0);
         }
         // The contrast between the two stability scores IS the demo point.
+        assertThat(results).as("at least one temperature=0.0 run must succeed").isNotEmpty();
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -713,6 +713,8 @@ class OllamaEndToEndIT {
         log.info("🔑 Testing seed=42 reproducibility...");
         ExtractedInvoice resultA = extractorA.extract(InvoiceTestData.CLEAN_INVOICE);
         ExtractedInvoice resultB = extractorB.extract(InvoiceTestData.CLEAN_INVOICE);
+        assertThat(resultA).isNotNull();
+        assertThat(resultB).isNotNull();
 
         log.info("   Model A: invoice={}, amount={}, date={}", resultA.invoiceNumber(), resultA.amount(), resultA.date());
         log.info("   Model B: invoice={}, amount={}, date={}", resultB.invoiceNumber(), resultB.amount(), resultB.date());
@@ -781,6 +783,8 @@ class OllamaEndToEndIT {
 
         log.info("🪞 Faithfulness score: {}%", (int) (result.faithfulnessScore() * 100));
         log.info("🪞 Synthetic summary: {}", result.syntheticSummary());
+        assertThat(result.faithfulnessScore()).isBetween(0.0, 1.0);
+        assertThat(result.syntheticSummary()).isNotBlank();
 
         if (result.faithfulnessScore() >= 0.8) {
             log.info("✅ Mirror Test PASSED — the extraction is faithful to the original.");

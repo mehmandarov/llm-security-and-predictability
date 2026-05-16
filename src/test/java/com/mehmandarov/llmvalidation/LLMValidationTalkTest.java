@@ -55,10 +55,8 @@ class LLMValidationTalkTest {
     @Order(1)
     void chapter1_TheHoneymoon_shouldExtractCleanInvoice() {
         // Arrange
-        String jsonResponse = """
-            { "invoiceNumber": "INV-2024-001", "date": "2024-03-21", "amount": 1500.00, "currency": "USD" }
-            """;
-        ChatResponse response = ChatResponse.builder().aiMessage(AiMessage.from(jsonResponse)).build();
+        ChatResponse response = ChatResponse.builder()
+                .aiMessage(AiMessage.from(InvoiceTestData.CLEAN_INVOICE_RESPONSE_JSON)).build();
         when(mockModel.chat(any(List.class))).thenReturn(response);
         when(mockModel.chat(any(ChatRequest.class))).thenReturn(response);
         
