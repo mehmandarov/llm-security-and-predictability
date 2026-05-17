@@ -1,0 +1,38 @@
+=== Stage 2 — Security
+==== The Attacker Is in Your Input
+
+---
+
+*Threat in one sentence:* anything in the user input is a possible *instruction* to your model.
+That's *prompt injection*.
+
+==== The Three-Step Playbook
+
+[cols="1,2,3"]
+|===
+| | Layer | What it does
+
+| 1 | *Block at the door* | Length limits, blacklists, intent classifier
+| 2 | *Mark the boundary* | Wrap user data in `<user_input>...</user_input>` delimiters — teach the model what's data vs. instruction
+| 3 | *Inspect on the way out* | Output must be valid JSON, no PII, no leaked secret token
+|===
+
+==== The Full Castle (link:../src/main/java/com/mehmandarov/llmvalidation/chapter2_guardrails/FortifiedInvoiceExtractor.java[FortifiedInvoiceExtractor.java])
+
+```
+Input length → Injection blacklist → (model w/ sandwiching) → Format check → PII redaction
+```
+
+* No single layer is enough. Defense in depth.
+* The same `SANDWICH_BREAKOUT` attack that sails through the bare extractor is *caught* here.
+
+[NOTE]
+====
+Every layer is a few lines of code. The cost is small. The cost of skipping them is your next breach notification.
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:02_honeymoon.adoc[⬅️ Stage 1] /
+link:04_predictability.adoc[➡️ Stage 3 — Predictability]

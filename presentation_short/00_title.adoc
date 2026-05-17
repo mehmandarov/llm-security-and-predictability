@@ -1,0 +1,20 @@
+[cols="1,1",frame=none,grid=none]
+|===
+.^a|
+
+== 🎲 Taming the Chaos:
+==== Security and Predictability in LLM-Powered Applications
+
+_The 20-minute, mixed-audience version_
+
+---
+===== Rustam Mehmandarov
+link:https://rustam.no[@rustam.no]
+
+.^a|
+image::../presentation/assets/title_img.png[Title image,500,align="right"]
+|===
+
+---
+
+link:00b_about_me.adoc[➡️ About Me]

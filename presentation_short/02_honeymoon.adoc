@@ -1,0 +1,35 @@
+=== Stage 1 — The Naive Version
+==== "It Just Works!" (Day 1)
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter1_basics/SimpleInvoiceExtractor.java[SimpleInvoiceExtractor.java]
+
+[source,java]
+----
+public interface SimpleInvoiceExtractor {
+
+    @SystemMessage("You are a helpful assistant that extracts invoice data.")
+    @UserMessage("Extract data from this text: {{text}}")
+    ExtractedInvoice extract(@V("text") String text);
+}
+----
+
+* Five lines of LangChain4j. Model returns nicely typed JSON.
+* On the golden test data: it works. We ship.
+
+==== Then…
+
+* Day 2: it _mostly_ works.
+* Day 3: "Why did the LLM process an invoice from the year *2050*?"
+
+[NOTE]
+====
+*Structured output is not validation.* It just means you got a well-formatted lie.
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:01c_domain.adoc[⬅️ The Domain] /
+link:03_security.adoc[➡️ Stage 2 — Security]

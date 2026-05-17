@@ -1,0 +1,46 @@
+=== 🎲 Taming the Chaos — Short (≈20 min)
+==== LangChain4j + Ollama
+===== Table of Contents
+
+* link:00_title.adoc[🎲 Taming the Chaos:]
+* link:00b_about_me.adoc[About Me]
+* link:01_intro.adoc[Introduction]
+* link:01b_overview.adoc[What We'll Cover]
+* link:01c_domain.adoc[The Domain — Invoice Extraction]
+
+*Stage 1 — The Naive Version*
+
+* link:02_honeymoon.adoc[Stage 1 — The Naive Version]
+
+*Stage 2 — Security*
+
+* link:03_security.adoc[Stage 2 — Security]
+
+*Stage 3 — Predictability*
+
+* link:04_predictability.adoc[Stage 3 — Predictability (Part 1)]
+* link:04b_predictability_compute.adoc[Stage 3 — Predictability (Part 2)]
+
+*Stage 4 — Self-Correction*
+
+* link:05_correction_consensus.adoc[Stage 4 — Self-Correction]
+
+*Stage 5 — Multi-Model Consensus*
+
+* link:05b_consensus.adoc[Stage 5 — Multi-Model Consensus]
+
+*The Capstone*
+
+* link:06_capstone.adoc[The Capstone — A *Typed Verdict*, Not an Exception ⭐]
+
+*Bonus*
+
+* link:07_mirror.adoc[Bonus — The Mirror Test]
+
+*Wrap-Up*
+
+* link:08_summary.adoc[Takeaway — Three Lines]
+* link:09_thank_you.adoc[Thank You! 🎉]
+
+---
+===== Rustam Mehmandarov — link:https://rustam.no[@rustam.no]

@@ -1,0 +1,20 @@
+=== Introduction
+==== The Promise vs. The Reality
+
+---
+
+* "Who has used an LLM at work in the last week? Keep your hand up if you'd let it sign a contract on your behalf."
+* LLMs are *probabilistic*. Business logic is not.
+* The question isn't whether the model will be wrong. *It will be wrong.*
+The question is what your system does when it is.
+
+[NOTE]
+====
+*Promise of this talk:* in 20 minutes you'll have a vocabulary and a mental model for shipping LLM features that don't end up in a post-mortem.
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:00b_about_me.adoc[⬅️ About Me] /
+link:01b_overview.adoc[➡️ What We'll Cover]

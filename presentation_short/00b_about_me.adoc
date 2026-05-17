@@ -1,0 +1,22 @@
+=== About Me
+
+---
+
+==== Rustam Mehmandarov
+
+* 💼 Principal Engineer and Cloud Lead @ Miles, Norway
+* ☕ Java Champion
+* 🌐 Google Developer Expert (GDE) for Cloud
+* 🐳 Docker Captain
+* 🏆 Oracle ACE Pro
+* 🎤 Conference speaker & community organizer
+
+---
+
+link:https://rustam.no[@rustam.no] · link:https://github.com/mehmandarov[GitHub] · link:https://linkedin.com/in/mehmandarov[LinkedIn]
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:00_title.adoc[⬅️ Title] /
+link:01_intro.adoc[➡️ Introduction]

@@ -1,0 +1,29 @@
+=== Stage 4 — Self-Correction
+==== Bargaining With the Model
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter4_correction/CorrectiveExtractor.java[CorrectiveExtractor.java]
+
+> "If the validator catches an error, hand the error back to the LLM and let it try again. Cap it at 3 attempts."
+
+```
+Extract  →  Validate  →  Errors?  →  Re-prompt with errors  →  Validate again
+   ↑                                          │
+   └──────────────────────────────────────────┘  (max N retries)
+```
+
+* Attempt 1: Fail (future date). Feedback: _"Date must be in the past."_
+* Attempt 2: Success.
+* Most one-off hallucinations are fixed on the second try.
+
+[NOTE]
+====
+*Turn runtime exceptions into successful transactions* — without giving up determinism.
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04b_predictability_compute.adoc[⬅️ Stage 3 — Part 2] /
+link:05b_consensus.adoc[➡️ Stage 5 — Consensus]

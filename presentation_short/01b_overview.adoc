@@ -1,0 +1,22 @@
+=== What We'll Cover
+
+---
+
+[cols="1,3,4"]
+|===
+| # | Stage | The Idea in One Line
+
+| 1 | *The Naive Version* | Structured output is not validation
+| 2 | *Security* | Defense in depth — block, mark, inspect
+| 3 | *Predictability* | Trust code, not the model
+| 4 + 5 | *Self-Correction & Consensus* | Retry with feedback; vote across models
+| ⭐ | *The Capstone* | A *typed verdict* the caller can act on
+|===
+
+_One running example throughout: invoice extraction. One mental model out: input guard → model → output guard → validate → verdict._
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:01_intro.adoc[⬅️ Introduction] /
+link:01c_domain.adoc[➡️ The Domain]

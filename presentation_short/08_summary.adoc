@@ -1,0 +1,28 @@
+=== Takeaway — Three Lines
+
+---
+
+[.lead]
+1. *LLMs are not the application.* +
+They are _one component_ in the application — the unreliable one.
+
+[.lead]
+2. *Wrap the unreliable component.* +
+Guardrails on the way in. Validators on the way out. A *typed verdict* for the caller.
+
+[.lead]
+3. *Make failure boring.* +
+A flagged invoice is a routine workflow. A silent failure in production is a Sunday-night incident.
+
+---
+
+[NOTE]
+====
+*"We're not here to make LLMs perfect. We're here to make systems that fail safely and predictably when they're not. That's the boring, profitable engineering this technology actually needs."*
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:07_mirror.adoc[⬅️ Mirror Test] /
+link:09_thank_you.adoc[➡️ Thank You]

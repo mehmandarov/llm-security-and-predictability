@@ -1,0 +1,47 @@
+=== The Capstone — A *Typed Verdict*, Not an Exception ⭐
+==== link:../src/main/java/com/mehmandarov/llmvalidation/chapter5_consensus/SafeExtractionPipeline.java[SafeExtractionPipeline.java]
+
+---
+
+[source,java]
+----
+public enum Status { ACCEPTED, NEEDS_REVIEW, REJECTED }
+
+public ExtractionOutcome process(String text) {
+    try {
+        ExtractedInvoice invoice = correctiveExtractor.extract(text);   // Ch1 + Ch4
+        ValidationResult v       = validator.validate(invoice);         // Ch3
+
+        return v.isValid()
+            ? new ExtractionOutcome(Status.ACCEPTED,     invoice, null)
+            : new ExtractionOutcome(Status.NEEDS_REVIEW, invoice, v.reason());
+
+    } catch (Exception e) {
+        return new ExtractionOutcome(Status.REJECTED, null, e.getMessage());
+    }
+}
+----
+
+[cols="1,2,2"]
+|===
+| Verdict | What it means | What the system does next
+
+| `ACCEPTED`     | All checks passed             | Auto-process
+| `NEEDS_REVIEW` | Probably right, not certain   | Route to a human
+| `REJECTED`     | Failed all attempts           | Bounce back to sender
+|===
+
+[NOTE]
+====
+We didn't build a system that is always right.
+We built a system that *knows when it isn't, and tells you*.
+
+*You can audit a verdict. You can put an SLA on a verdict. You can build a UI for a verdict.
+You cannot do any of that with "the model said so."*
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:05b_consensus.adoc[⬅️ Stage 5 — Consensus] /
+link:07_mirror.adoc[➡️ Bonus — The Mirror Test]

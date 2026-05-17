@@ -1,0 +1,25 @@
+=== Bonus — The Mirror Test
+==== "How do you check the answer when you don't have the answer key?"
+
+---
+
+```
+Original Text  ──►  Extraction  ──►  JSON
+                                       │
+                                       ▼
+                          The Mirror: LLM writes a summary from JSON only
+                                       │
+                                       ▼
+                          Compare Summary vs. Original
+                                       │
+                                       ▼
+                          Faithfulness Score (0–100%)
+```
+
+_If the summary is missing the shipping fee, and the original had it — your JSON is broken._
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:06_capstone.adoc[⬅️ The Capstone] /
+link:08_summary.adoc[➡️ Summary]

@@ -1,0 +1,26 @@
+=== Stage 3 — Predictability (Part 1)
+==== Don't Let the LLM Do Math — Layer A: Deterministic Validation
+
+---
+
+*The hallucination story:* the model confidently sums `750 + 250 + 125.50` and returns `1200`. Wrong. _Always_ wrong.
+
+*The principle:* if a step can be done deterministically, *do it deterministically*.
+
+==== Layer A — Deterministic Validation (link:../src/main/java/com/mehmandarov/llmvalidation/chapter3_validation/StrictValidator.java[StrictValidator.java])
+
+* *Schema:* Jakarta Bean Validation — `@NotNull`, `@PastOrPresent`, `@Positive`
+* *Business rules:* "Does total = sum(items)?" — pure math
+* *Sanity checks:* "Is the amount > $10 million?" — probably a bug
+* Zero LLM involved.
+
+[NOTE]
+====
+*The LLM says the invoice is from 2050? Bean Validation says no. Pure code, zero probability.*
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:03_security.adoc[⬅️ Stage 2] /
+link:04b_predictability_compute.adoc[➡️ Stage 3 — Part 2]

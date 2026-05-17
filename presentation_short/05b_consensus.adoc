@@ -1,0 +1,23 @@
+=== Stage 5 — Multi-Model Consensus
+==== Democracy for AI
+
+---
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter5_consensus/MultiModelConsensus.java[MultiModelConsensus.java]
+
+> "Ask the same question to two or three models. If they agree, you have *evidence*. If they disagree, you have a *flag*."
+
+* Same model at different temperatures → simulated diversity
+* *Different* architectures (gemma + llama) → stronger evidence
+* Per-field majority vote → confidence score
+
+[NOTE]
+====
+The difference between "the model said so" and "*three independent models* said so." One is an opinion. The other is a signal.
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:05_correction_consensus.adoc[⬅️ Stage 4] /
+link:06_capstone.adoc[➡️ The Capstone]

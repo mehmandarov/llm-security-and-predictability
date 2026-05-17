@@ -1,0 +1,29 @@
+=== Stage 3 — Predictability (Part 2)
+==== Layer B: Move the Computation Out of the Model
+
+---
+
+==== Two Patterns, One Goal
+
+[cols="1,2,2"]
+|===
+| | Function Calling | Code Execution
+
+| Who decides _what_? | LLM picks the tool | LLM writes the formula
+| Who decides _how_?  | Java executes it   | Java evaluates it safely
+| Safety net          | Tool signatures    | Regex whitelist + parser
+|===
+
+* The *generation* is probabilistic. The *execution* is deterministic.
+* `Chapter3Test.codeExecShouldRejectUnsafeInput` — model writes `"750 + 250 + System.exit(0)"`. Java refuses. 🎤
+
+[NOTE]
+====
+The model can suggest. The system decides. *That's the contract.*
+====
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04_predictability.adoc[⬅️ Stage 3 — Part 1] /
+link:05_correction_consensus.adoc[➡️ Stage 4 + 5]

@@ -1,0 +1,30 @@
+=== Thank You! 🎉
+
+---
+
+==== Code, Slides, Longer Presentation
+
+* Code: https://github.com/mehmandarov/llm-validation-and-predictability
+* Long deep-dive deck → link:../presentation/00_title.adoc[`presentation/`]
+
+
+==== Tech Stack
+
+* *Java 25* · *LangChain4j* · *Ollama* (gemma4:e2b)
+* *Jakarta Validation* · *JUnit 5* · *Mockito*
+
+==== Run It Yourself
+
+```bash
+mvn test                       # mocked tests, fast, no LLM
+ollama serve && mvn verify     # live tests against a real model
+```
+
+==== Questions?
+
+===== Rustam Mehmandarov — link:https://rustam.no[@rustam.no]
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:08_summary.adoc[⬅️ Summary]
