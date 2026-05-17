@@ -14,20 +14,10 @@ For the deep dive (≈90 min), use `../presentation/`.
 
 | File | Purpose |
 |---|---|
-| `slides.adoc` | Master file — all slides separated by `// ---- filename.adoc ----` markers |
 | `00_title.adoc` … `09_thank_you.adoc` | Individual slide files |
 | `toc.adoc` | Auto-generated table of contents |
-| `split_slides.py` | Splits `slides.adoc` into individual files + regenerates `toc.adoc` |
 | `.asciidoctorconfig` | Asciidoctor settings |
 
-## Workflow
-
-```bash
-cd presentation_short
-python3 split_slides.py
-```
-
-Edit `slides.adoc` (the single source of truth) and re-run the script.
 
 ## Slide map (≈20 min)
 
@@ -54,3 +44,6 @@ Speaker notes: `../TALK_SCRIPT_SHORT.md`.
 ## Assets
 
 Title image reused from the long deck via `../presentation/assets/title_img.png` — no duplicate binary.
+
+## Important note
+Code, slides, text contents are owned by Rustam Mehmandarov and cannot be reproduced without a prior agreement.

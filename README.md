@@ -8,7 +8,7 @@ LLMs are probabilistic by nature — great for creativity, but dangerous for bus
 
 ## Prerequisites
 
-*   **Java 21+**
+*   **Java 25+**
 *   **Maven**
 *   **Ollama** (optional — for end-to-end integration tests)
     ```bash
@@ -93,3 +93,6 @@ The code is organized by **Chapters** corresponding to the narrative of the talk
 
 ---
 *Note: Common models and shared code live in `com.mehmandarov.llmvalidation.model`.*
+
+## Important note
+Code, slides, text contents are owned by Rustam Mehmandarov and cannot be reproduced without a prior agreement.
