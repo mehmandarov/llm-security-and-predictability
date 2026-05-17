@@ -14,7 +14,7 @@ public class StrictValidator {
     public ValidationResult validate(ExtractedInvoice invoice) {
         List<ValidationError> errors = new ArrayList<>();
 
-        // Layer 1: Schema (Jakarta Bean Validation)
+        // Layer 1: Schema (Jakarta Validation — Hibernate Validator + Expressly EL)
         // @NotNull, @PastOrPresent — annotations on the record fields
         Set<ConstraintViolation<ExtractedInvoice>> violations =
                 jakartaValidator.validate(invoice);

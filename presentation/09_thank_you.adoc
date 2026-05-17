@@ -11,7 +11,7 @@ https://github.com/mehmandarov/llm-validation-and-predictability
 ==== Tech Stack
 
 * *Java 21* (LTS) • *LangChain4j* • *Ollama*
-* *Jakarta Validation* • *JUnit 5 & Mockito*
+* *Jakarta Validation* (Hibernate Validator + Expressly) • *JUnit 5 & Mockito*
 * *Maven Failsafe* for integration tests
 
 ==== Running the Demo
