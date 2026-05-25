@@ -1,4 +1,7 @@
 :icons: font
+// Works better in VSCode -->
+//:source-highlighter: highlight.js
+// Works better in IntelliJ IDEA -->
 :source-highlighter: coderay
 :experimental:
 :imagesdir: .
