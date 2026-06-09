@@ -1,0 +1,39 @@
+=== Ch3 — Shape the Output First
+==== Guided Prompting — Add the Rules the Type System Can't Express
+
+---
+
+*The principle:* before you validate, reduce how often the model errs at the source. But be precise about *what* actually helps.
+
+==== The schema is free — you don't write it
+
+link:../src/main/java/com/mehmandarov/llmvalidation/chapter3_validation/StructuredInvoiceExtractor.java[StructuredInvoiceExtractor.java] returns `ExtractedInvoice` — so LangChain4j *already* derives the JSON schema from the record and deserializes the reply. `SimpleInvoiceExtractor` gets that too.
+
+* ❌ Re-typing `{ "invoiceNumber": string, "date": ... }` by hand is *redundant* — and **drifts** the moment you add a field
+* ✅ The real delta is the *semantic* guidance a `LocalDate` or `BigDecimal` can't encode
+
+[source,java]
+----
+// No schema here — the ExtractedInvoice return type already drives it.
+@SystemMessage("""
+    Extract the invoice data. Follow these rules:
+    - Output ONLY JSON. No prose, no fences.
+    - Use the date exactly as written; do NOT shift it.
+    - Copy the stated total verbatim; do NOT recalculate the math.   // ← BigDecimal can't say this
+    - If a value is missing, use null — never guess.
+    """)
+@UserMessage("<user_input>\n{{text}}\n</user_input>")   // ← sandwiching carries over from Ch2
+ExtractedInvoice extract(@V("text") String text);
+----
+
+* This only *narrows* the distribution — the model can still return a 2050 date in *valid JSON*
+* That's prevention, not a guarantee → which is exactly why we validate next
+
+_"The type gives you structure for free. You add the rules. Then you trust code — not the model."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:03g_attack_fortified.adoc[⬅️ The Fortified Extractor] /
+link:04_hallucination.adoc[➡️ Deterministic Validation]
+

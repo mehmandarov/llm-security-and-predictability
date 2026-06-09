@@ -6,10 +6,10 @@
 |===
 | # | Stage | Key Technique
 
-| 1 | *The Honeymoon* | `AiServices.create()`, structured output
+| 1 | *The Honeymoon* | `AiServices.create()` – naive extraction
 | 2 | *The Attack* | Guardrails, sandwiching, canary traps, intent classification
-| 3 | *The Hallucination* | `StrictValidator`, normalizer, tool calling, code execution
-| 4 | *The Bargaining* | Self-correction loop — feed errors back to the LLM
+| 3 | *The Hallucination* | Structured-output prompting, `StrictValidator`, normalizer, tool calling, code execution
+| 4 | *The Bargaining* | Self-correction loop – feed errors back to the LLM
 | 5 | *The Council* | Multi-model consensus, stability analysis, safe pipeline
 | ⭐ | *The Mirror Test* | Round-trip verification — catch what's *missing*
 |===

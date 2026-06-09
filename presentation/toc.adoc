@@ -24,6 +24,7 @@
 
 *Ch3 — The Hallucination*
 
+* link:04_structured_output.adoc[Ch3 — Shape the Output First]
 * link:04_hallucination.adoc[Ch3 — The Hallucination]
 * link:04b_normalizer.adoc[Ch3 — Normalizing the Chaos]
 * link:04c_tool_calling.adoc[Ch3 — Function Calling]

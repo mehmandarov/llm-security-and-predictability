@@ -15,6 +15,7 @@ import com.mehmandarov.llmvalidation.chapter3_validation.InvoiceCalculatorTool;
 import com.mehmandarov.llmvalidation.chapter3_validation.ExpressionEvaluator;
 import com.mehmandarov.llmvalidation.chapter3_validation.FormulaGenerator;
 import com.mehmandarov.llmvalidation.chapter3_validation.ToolAwareInvoiceExtractor;
+import com.mehmandarov.llmvalidation.chapter3_validation.StructuredInvoiceExtractor;
 import com.mehmandarov.llmvalidation.chapter4_correction.CorrectiveExtractor;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus;
 import com.mehmandarov.llmvalidation.chapter5_consensus.MultiModelConsensus.ConsensusResult;
@@ -330,6 +331,41 @@ class OllamaEndToEndIT {
 
     @Test
     @Order(10)
+    @DisplayName("Ch3 · Structured-output prompting — shape the output before validating")
+    void chapter3_structuredOutputWithRealModel() {
+        // Layer 0 of predictability: hand the model an explicit schema + rules so its
+        // JSON maps cleanly onto ExtractedInvoice. Contrast with SimpleInvoiceExtractor,
+        // which just says "extract invoice data" and hopes for the best.
+        StructuredInvoiceExtractor structured =
+                AiServices.create(StructuredInvoiceExtractor.class, ollamaModel);
+
+        log.info("🧱 Asking model for STRUCTURED output (schema + rules + example)...");
+        try {
+            ExtractedInvoice result = structured.extract(InvoiceTestData.INVOICE_WITH_LINE_ITEMS);
+            log.info("📋 Structured extraction: invoice={}, date={}, amount={}, currency={}, items={}",
+                    result.invoiceNumber(), result.date(), result.amount(), result.currency(),
+                    result.items() != null ? result.items().size() : 0);
+
+            // Soft assertions — a real small model is still non-deterministic, but the
+            // structured prompt should at least yield a parseable, schema-shaped result.
+            assertThat(result).isNotNull();
+            assertThat(result.invoiceNumber()).isNotBlank();
+            assertThat(result.amount()).isNotNull();
+
+            // Then verify with code — shape narrows the distribution, validation closes the gap.
+            StrictValidator validator = new StrictValidator();
+            ValidationResult validation = validator.validate(result);
+            log.info("🔍 Post-extraction validation: valid={}, errors={}",
+                    validation.isValid(), validation.errors());
+            log.info("   ✅ Shape the output (prompt), THEN trust code (validate). That's the pattern.");
+        } catch (Exception e) {
+            log.warn("⚠️ Structured extraction failed: {}", e.getMessage());
+            log.warn("   Even with a schema, a small model can drift — which is exactly why we validate next.");
+        }
+    }
+
+    @Test
+    @Order(11)
     @DisplayName("Ch3 · Real model output is validated — errors are caught deterministically")
     void chapter3_validateRealOutput() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -355,7 +391,7 @@ class OllamaEndToEndIT {
     }
 
     @Test
-    @Order(11)
+    @Order(12)
     @DisplayName("Ch3 · Real model struggles with bad math")
     void chapter3_validateMathError() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -370,7 +406,7 @@ class OllamaEndToEndIT {
     }
 
     @Test
-    @Order(12)
+    @Order(13)
     @DisplayName("Ch3 · Tool calling — LLM uses a calculator instead of guessing math")
     void chapter3_toolCallingWithRealModel() {
         // Wire the tool into the extractor — the LLM can call calculateTotal() instead of guessing
@@ -403,7 +439,7 @@ class OllamaEndToEndIT {
     }
 
     @Test
-    @Order(13)
+    @Order(14)
     @DisplayName("Ch3 · Code execution — LLM generates formula, Java evaluates it")
     void chapter3_codeExecutionWithRealModel() {
         FormulaGenerator generator = AiServices.create(FormulaGenerator.class, ollamaModel);
@@ -439,7 +475,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(14)
+    @Order(15)
     @DisplayName("Ch4 · Self-correction loop improves results")
     void chapter4_selfCorrectionWithRealModel() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -462,7 +498,7 @@ class OllamaEndToEndIT {
     }
 
     @Test
-    @Order(15)
+    @Order(16)
     @DisplayName("Ch4 · Self-correction with ambiguous date — real model resolves 01/02/2024")
     void chapter4_ambiguousDateWithRealModel() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -489,7 +525,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(16)
+    @Order(17)
     @DisplayName("Ch5 · Consensus across same model at different temperatures")
     void chapter5_consensusSameModelDifferentTemperatures() {
         // Use the same model at different temperatures to simulate diversity
@@ -516,7 +552,7 @@ class OllamaEndToEndIT {
     }
 
     @Test
-    @Order(17)
+    @Order(18)
     @DisplayName("Ch5 · Consensus across DIFFERENT models (true multi-model)")
     void chapter5_consensusDifferentModels() {
         // True multi-model consensus: different architectures, same question
@@ -565,7 +601,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(18)
+    @Order(19)
     @DisplayName("Ch5 · Consensus with messy OCR — does agreement hold on noisy data?")
     void chapter5_consensusWithMessyOcr() {
         ChatModel deterministic = OllamaChatModel.builder()
@@ -601,7 +637,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(19)
+    @Order(20)
     @DisplayName("🎲 Ch5 · Stability analysis — measuring variance across repeated runs")
     void bonus_stabilityMeasurement() {
         ChatModel deterministicModel = OllamaChatModel.builder()
@@ -661,7 +697,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(20)
+    @Order(21)
     @DisplayName("Ch5 · SafeExtractionPipeline — full stack: extract → validate → correct → verdict")
     void chapter5_safeExtractionPipelineWithRealModel() {
         SimpleInvoiceExtractor extractor = AiServices.create(SimpleInvoiceExtractor.class, ollamaModel);
@@ -694,7 +730,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(21)
+    @Order(22)
     @DisplayName("🎲 Ch5 · Seed-based reproducibility — testing the model's determinism promise")
     void bonus_seedReproducibility() {
         // Build two identical models with the same seed
@@ -763,7 +799,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(22)
+    @Order(23)
     @DisplayName("🪞 Bonus · Mirror Test — does the extraction survive a round trip?")
     void chapter6_mirrorTestWithRealModel() {
         // Step 1: Extract structured data from the clean invoice
@@ -800,7 +836,7 @@ class OllamaEndToEndIT {
     // ─────────────────────────────────────────────────────────────────────
 
     @Test
-    @Order(23)
+    @Order(24)
     @DisplayName("🎲 Bonus · Same input, 3 extractions — observe the variance")
     void bonus_demonstrateNonDeterminism() {
         // Use temperature > 0 so the model actually varies

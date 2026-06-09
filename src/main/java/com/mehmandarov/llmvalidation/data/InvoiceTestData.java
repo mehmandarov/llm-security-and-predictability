@@ -139,6 +139,24 @@ public class InvoiceTestData {
         Currency: USD
         """;
 
+    // --- Chapter 1: Structured-output prompting — full mock model response ---
+    // Matches INVOICE_WITH_LINE_ITEMS: nested line items, null customerEmail, total 1125.50.
+    // Used to test StructuredInvoiceExtractor's schema-shaped output end-to-end.
+    public static final String STRUCTURED_INVOICE_RESPONSE_JSON = """
+            {
+              "invoiceNumber": "INV-TOOL-001",
+              "date": "2024-06-15",
+              "amount": 1125.50,
+              "currency": "USD",
+              "customerEmail": null,
+              "items": [
+                { "description": "Consulting Services", "quantity": 1, "unitPrice": 750.00 },
+                { "description": "Software License",     "quantity": 1, "unitPrice": 250.00 },
+                { "description": "Support Package",      "quantity": 1, "unitPrice": 125.50 }
+              ]
+            }
+            """;
+
     // --- Chapter 5: The Council (Consensus) ---
     // This text is intentionally messy to cause different models to guess differently
     public static final String MESSY_OCR = """

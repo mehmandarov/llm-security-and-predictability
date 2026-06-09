@@ -40,5 +40,5 @@ _"The LLM says the invoice is from 2050? Bean Validation says no. Pure code, zer
 ---
 
 link:toc.adoc[⬆️ TOC] /
-link:03g_attack_fortified.adoc[⬅️ The Fortified Extractor] /
+link:04_structured_output.adoc[⬅️ Shape the Output First] /
 link:04b_normalizer.adoc[➡️ Output Normalizer]
