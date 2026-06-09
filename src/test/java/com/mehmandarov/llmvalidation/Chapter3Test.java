@@ -6,7 +6,9 @@ import com.mehmandarov.llmvalidation.chapter3_validation.StrictValidator;
 import com.mehmandarov.llmvalidation.chapter3_validation.InvoiceCalculatorTool;
 import com.mehmandarov.llmvalidation.chapter3_validation.ExpressionEvaluator;
 import com.mehmandarov.llmvalidation.chapter3_validation.OutputNormalizer;
+import com.mehmandarov.llmvalidation.chapter3_validation.StructuredInvoiceExtractor;
 import com.mehmandarov.llmvalidation.chapter3_validation.ToolAwareInvoiceExtractor;
+import com.mehmandarov.llmvalidation.data.InvoiceTestData;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
@@ -29,6 +31,54 @@ import static org.mockito.Mockito.when;
 class Chapter3Test {
 
     private final StrictValidator validator = new StrictValidator();
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  Structured-Output Prompting — "Shape the output, then verify"
+    //  The first predictability layer: hand the model an explicit schema,
+    //  format rules, and a worked example so its JSON maps cleanly onto
+    //  ExtractedInvoice. This narrows the output distribution — it does not
+    //  collapse it, which is why StrictValidator still has work to do.
+    // ─────────────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("structured output: parses schema-shaped JSON with nested line items")
+    void shouldExtractStructuredInvoiceWithLineItems() {
+        // Arrange — the model returns JSON shaped exactly like the schema in the
+        // StructuredInvoiceExtractor system prompt (nested items, null customerEmail).
+        ChatModel mockModel = mock(ChatModel.class);
+        ChatResponse response = ChatResponse.builder()
+                .aiMessage(AiMessage.from(InvoiceTestData.STRUCTURED_INVOICE_RESPONSE_JSON)).build();
+        when(mockModel.chat(any(List.class))).thenReturn(response);
+        when(mockModel.chat(any(ChatRequest.class))).thenReturn(response);
+
+        StructuredInvoiceExtractor extractor =
+                AiServices.create(StructuredInvoiceExtractor.class, mockModel);
+
+        // Act
+        ExtractedInvoice result = extractor.extract(InvoiceTestData.INVOICE_WITH_LINE_ITEMS);
+
+        // Assert — top-level fields map cleanly onto the record
+        assertThat(result.invoiceNumber()).isEqualTo("INV-TOOL-001");
+        assertThat(result.date()).isEqualTo(LocalDate.of(2024, 6, 15));
+        assertThat(result.amount()).isEqualByComparingTo("1125.50");
+        assertThat(result.currency()).isEqualTo("USD");
+        assertThat(result.customerEmail()).isNull();
+
+        // Assert — nested line items are parsed into the LineItem record list
+        assertThat(result.items()).hasSize(3);
+        assertThat(result.items().getFirst().description()).isEqualTo("Consulting Services");
+        assertThat(result.items().getFirst().quantity()).isEqualTo(1);
+        assertThat(result.items().getFirst().unitPrice()).isEqualByComparingTo("750.00");
+
+        // Sanity: the line items sum to the stated total (deterministic check)
+        BigDecimal itemsTotal = result.items().stream()
+                .map(i -> i.unitPrice().multiply(BigDecimal.valueOf(i.quantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertThat(itemsTotal).isEqualByComparingTo(result.amount());
+
+        // The structured result still feeds the validator — shape, THEN verify.
+        assertThat(validator.validate(result).isValid()).isTrue();
+    }
 
     @Test
     @DisplayName("should catch hallucinated future dates (Temporal Rule)")

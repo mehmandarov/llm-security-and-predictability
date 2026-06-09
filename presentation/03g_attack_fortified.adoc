@@ -41,4 +41,4 @@ Input length → Injection blacklist + breakout detection → (model with sandwi
 
 link:toc.adoc[⬆️ TOC] /
 link:03f_attack_bouncer.adoc[⬅️ The Bouncer] /
-link:04_hallucination.adoc[➡️ Ch3 — The Hallucination]
+link:04_structured_output.adoc[➡️ Ch3 — Shape the Output First]
