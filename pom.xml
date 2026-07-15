@@ -16,7 +16,7 @@
         <langchain4j.version>1.15.0</langchain4j.version>
 
         <!-- Jakarta Validation (spec impls — see comment in <dependencies> below) -->
-        <hibernate-validator.version>9.1.0.Final</hibernate-validator.version>
+        <hibernate-validator.version>9.1.2.Final</hibernate-validator.version>
         <expressly.version>6.0.0</expressly.version>
 
         <!-- Logging -->
