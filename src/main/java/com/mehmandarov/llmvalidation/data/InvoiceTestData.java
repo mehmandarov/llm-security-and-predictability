@@ -1,10 +1,23 @@
 package com.mehmandarov.llmvalidation.data;
 
+import java.time.LocalDate;
+
 /**
  * The "Database of Chaos" - a collection of challenging invoice scenarios.
  * Each scenario tests a specific aspect of LLM validation and security.
  */
 public class InvoiceTestData {
+
+    /**
+     * A recent, always-valid invoice date, computed relative to "today".
+     * StrictValidator rejects dates in the future or more than 2 years old,
+     * so fixtures that must PASS validation use this instead of a hardcoded
+     * literal — otherwise the test silently rots and starts failing once the
+     * literal drifts past the 2-year window (which is exactly what happened
+     * to the CI build).
+     */
+    public static final LocalDate RECENT_DATE = LocalDate.now().minusMonths(1);
+    public static final String RECENT_DATE_STR = RECENT_DATE.toString();
 
     // --- Chapter 1: The Happy Path ---
     public static final String CLEAN_INVOICE = """
@@ -129,7 +142,7 @@ public class InvoiceTestData {
     // Expected total (sum of line items): 1125.50
     public static final String INVOICE_WITH_LINE_ITEMS = """
         INVOICE #INV-TOOL-001
-        Date: 2024-06-15
+        Date: %s
         
         Items:
         - Consulting Services: $750.00
@@ -137,7 +150,7 @@ public class InvoiceTestData {
         - Support Package: $125.50
         
         Currency: USD
-        """;
+        """.formatted(RECENT_DATE_STR);
 
     // --- Chapter 1: Structured-output prompting — full mock model response ---
     // Matches INVOICE_WITH_LINE_ITEMS: nested line items, null customerEmail, total 1125.50.
@@ -145,7 +158,7 @@ public class InvoiceTestData {
     public static final String STRUCTURED_INVOICE_RESPONSE_JSON = """
             {
               "invoiceNumber": "INV-TOOL-001",
-              "date": "2024-06-15",
+              "date": "%s",
               "amount": 1125.50,
               "currency": "USD",
               "customerEmail": null,
@@ -155,7 +168,7 @@ public class InvoiceTestData {
                 { "description": "Support Package",      "quantity": 1, "unitPrice": 125.50 }
               ]
             }
-            """;
+            """.formatted(RECENT_DATE_STR);
 
     // --- Chapter 5: The Council (Consensus) ---
     // This text is intentionally messy to cause different models to guess differently

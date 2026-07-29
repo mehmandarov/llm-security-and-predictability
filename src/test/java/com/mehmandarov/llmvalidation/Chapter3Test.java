@@ -59,7 +59,7 @@ class Chapter3Test {
 
         // Assert — top-level fields map cleanly onto the record
         assertThat(result.invoiceNumber()).isEqualTo("INV-TOOL-001");
-        assertThat(result.date()).isEqualTo(LocalDate.of(2024, 6, 15));
+        assertThat(result.date()).isEqualTo(InvoiceTestData.RECENT_DATE);
         assertThat(result.amount()).isEqualByComparingTo("1125.50");
         assertThat(result.currency()).isEqualTo("USD");
         assertThat(result.customerEmail()).isNull();
