@@ -1,0 +1,37 @@
+=== Ch5 — Goal Contracts & Evaluation
+==== Measure Outcomes, Not Just Outputs
+
+---
+
+[cols="1,2,2"]
+|===
+| Layer | What We Check | Fail Action
+
+| Format
+| JSON schema, required fields, type correctness
+| REJECTED
+
+| Business rules
+| total == sum(items), currency/date sanity
+| NEEDS_REVIEW or corrective retry
+
+| Goal success
+| objective met within budget and policy constraints
+| NEEDS_REVIEW
+
+| Operational safety
+| tool scope, retries, side effects, approval gates
+| REJECTED + alert
+|===
+
+* Keep an eval scorecard per goal: correctness, safety, cost, latency, stability
+* Compare against baseline runs to catch drift before prod incidents
+
+_"A valid JSON blob can still be a failed goal."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:06d_goal_oriented_architecture.adoc[⬅️ Goal-Oriented Architecture] /
+link:07_mirror.adoc[➡️ Bonus — The Mirror Test]
+

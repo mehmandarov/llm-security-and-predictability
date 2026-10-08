@@ -55,4 +55,4 @@ _"We didn't make the LLM perfect. We built a system that tells you when it's not
 
 link:toc.adoc[⬆️ TOC] /
 link:06b_stability.adoc[⬅️ Stability] /
-link:07_mirror.adoc[➡️ Bonus — The Mirror Test]
+link:06d_goal_oriented_architecture.adoc[➡️ Goal-Oriented Architecture]

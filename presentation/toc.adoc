@@ -30,6 +30,8 @@
 * link:04c_tool_calling.adoc[Ch3 — Function Calling]
 * link:04d_code_execution.adoc[Ch3 — Code Execution]
 * link:04e_two_approaches.adoc[Two Approaches, One Goal]
+* link:04f_mcp_integration.adoc[Ch3 — MCP Integration]
+* link:04g_mcp_threats_and_controls.adoc[Ch3 — MCP Threats & Controls]
 
 *Ch4 — The Bargaining*
 
@@ -40,6 +42,8 @@
 * link:06_council.adoc[Ch5 — The Council]
 * link:06b_stability.adoc[Ch5 — Measuring the Chaos]
 * link:06c_safe_pipeline.adoc[Ch5 — The Safe Extraction Pipeline]
+* link:06d_goal_oriented_architecture.adoc[Ch5 — Goal-Oriented Architecture]
+* link:06e_goal_contracts_and_eval.adoc[Ch5 — Goal Contracts & Evaluation]
 
 *Bonus — The Mirror Test*
 

@@ -43,5 +43,5 @@ _"If the summary is missing the shipping fee, and the original had it… your JS
 ---
 
 link:toc.adoc[⬆️ TOC] /
-link:06c_safe_pipeline.adoc[⬅️ Safe Pipeline] /
+link:06e_goal_contracts_and_eval.adoc[⬅️ Goal Contracts & Eval] /
 link:08_summary.adoc[➡️ Summary]

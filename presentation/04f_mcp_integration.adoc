@@ -1,0 +1,37 @@
+=== Ch3 — MCP Integration
+==== Standardizing Tool Access with Least Privilege
+
+---
+
+*The Shift:* tool calling works, but ad-hoc tool wiring does not scale across teams and runtimes.
+
+[source,java]
+----
+public record ToolPolicy(
+        Set<String> allowedTools,
+        Duration timeout,
+        boolean requireApprovalForWrites
+) {}
+
+ToolPolicy policy = new ToolPolicy(
+        Set.of("invoice.total", "fx.rate", "vendor.lookup"),
+        Duration.ofSeconds(3),
+        true
+);
+
+// MCP client discovers tools, but calls only policy-allowed capabilities.
+McpInvocationResult result = mcpClient.invoke("invoice.total", args, policy);
+----
+
+* MCP gives a consistent contract for tool discovery and invocation
+* Capability scoping keeps the model from reaching tools it should not use
+* Typed tool schemas make failures explicit instead of silently wrong
+
+_"MCP is a control plane for tool use, not a trust boundary by itself."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04e_two_approaches.adoc[⬅️ Two Approaches] /
+link:04g_mcp_threats_and_controls.adoc[➡️ MCP Threats & Controls]
+

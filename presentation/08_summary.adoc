@@ -10,9 +10,9 @@
 
 | 1 | *The Honeymoon* | Structured output is not validation
 | 2 | *The Attack* | 6 layers: blacklist, canary, format, sandwiching, bouncer, full castle
-| 3 | *The Hallucination* | Jakarta Validation, normalizer, tool calling, code execution
+| 3 | *The Hallucination* | Jakarta Validation, normalizer, tool calling, code execution, MCP controls
 | 4 | *The Bargaining* | Self-correction loop — feed errors back for another attempt
-| 5 | *The Council* | Consensus, stability measurement, safe extraction pipeline
+| 5 | *The Council* | Consensus, stability, safe pipeline, goal contracts, policy-driven execution
 | ⭐ | *The Mirror Test* | Round-trip verification — catch silent omissions
 |===
 
@@ -21,6 +21,7 @@
 * *Trust code, not the model.* Deterministic validation catches what LLMs miss.
 * *Defense in depth.* No single guardrail is enough.
 * *Fail safely.* `ACCEPTED` / `NEEDS_REVIEW` / `REJECTED` — always a clear verdict.
+* *Constrain capabilities.* MCP tools need allowlists, scopes, and idempotent writes.
 * *Measure the chaos.* Don't guess if your model is deterministic — quantify it.
 
 _"We didn't make the LLM perfect. We built a system that allows it to be imperfect, safely."_

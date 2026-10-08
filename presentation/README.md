@@ -1,6 +1,6 @@
 # Long Slide Deck — Taming the Chaos (≈90 min, deep dive)
 
-The full-length version of the talk. This deck walks through the complete narrative: naive extraction, a six-layer security stack, deterministic validation, normalization, tool calling, code execution, self-correction, consensus, stability analysis, a typed-verdict pipeline, and the Mirror Test.
+The full-length version of the talk. This deck walks through the complete narrative: naive extraction, a six-layer security stack, deterministic validation, normalization, tool calling, code execution, MCP integration patterns, self-correction, consensus, stability analysis, a typed-verdict pipeline, goal-oriented contracts, and the Mirror Test.
 
 For the compressed 20-minute version, use `../presentation_short/`.
 
@@ -41,10 +41,14 @@ For the compressed 20-minute version, use `../presentation_short/`.
 | 6c | `04c_tool_calling.adoc` | Function calling / tools | 5 min |
 | 6d | `04d_code_execution.adoc` | Code execution / formula evaluation | 5 min |
 | 6e | `04e_two_approaches.adoc` | Tool calling vs. code execution | 3 min |
+| 6f | `04f_mcp_integration.adoc` | MCP integration and capability scoping | 4 min |
+| 6g | `04g_mcp_threats_and_controls.adoc` | MCP threat model and controls | 4 min |
 | 7 | `05_bargaining.adoc` | Stage 4: Self-correction | 5 min |
 | 8 | `06_council.adoc` | Stage 5: Multi-model consensus | 5 min |
 | 8b | `06b_stability.adoc` | Stability analysis | 4 min |
 | 8c | `06c_safe_pipeline.adoc` | Typed verdict pipeline ⭐ | 5 min |
+| 8d | `06d_goal_oriented_architecture.adoc` | Goal-oriented architecture loop | 4 min |
+| 8e | `06e_goal_contracts_and_eval.adoc` | Goal contracts and evaluation | 4 min |
 | 9 | `07_mirror.adoc` | Bonus: Mirror Test | 4 min |
 | 10 | `08_summary.adoc` | Summary / takeaways | 2 min |
 | — | `09_thank_you.adoc` | Thank you / Q&A | — |

@@ -1,0 +1,30 @@
+=== Ch5 — Goal-Oriented Architecture
+==== From Prompt Chains to Goal Contracts
+
+---
+
+[source]
+----
+Goal Contract
+  ├─ objective: "Extract invoice safely"
+  ├─ constraints: date <= today, amount == line-item sum
+  ├─ budget: max_steps=6, max_cost_usd=0.03
+  └─ success: valid JSON + validator passes
+
+Planner -> Action Plan -> Executor -> Validator -> Verdict
+                    ^                         |
+                    |---------- retry --------|
+----
+
+* Separate planning from execution so each step can be audited
+* Validate preconditions and postconditions at each transition
+* Add hard stops: max iterations, timeout, token/cost budget
+
+_"A goal is not a prompt. It is a contract the system must satisfy."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:06c_safe_pipeline.adoc[⬅️ Safe Pipeline] /
+link:06e_goal_contracts_and_eval.adoc[➡️ Goal Contracts & Eval]
+

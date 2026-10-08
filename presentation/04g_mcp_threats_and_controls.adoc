@@ -1,0 +1,36 @@
+=== Ch3 — MCP Threats & Controls
+==== Treat Tool Servers as Untrusted Dependencies
+
+---
+
+[cols="1,2"]
+|===
+| MCP Failure Mode | Control
+
+| Prompt injection via tool output
+| Re-validate tool payloads, strip instructions, and enforce output schemas
+
+| Wrong tool selected
+| Deterministic routing policy + allowlist per goal type
+
+| Schema drift between server and client
+| Contract tests in CI + version-pinned tool manifests
+
+| Over-broad permissions
+| Per-session credentials, short-lived tokens, and least-privilege scopes
+
+| Duplicate side effects from retries
+| Idempotency keys and explicit write confirmations
+|===
+
+* Log every tool call with goal id, tool name, latency, retries, and verdict
+* Put human approval in front of irreversible actions
+
+_"If MCP is the highway, policy is the guardrail."_
+
+---
+
+link:toc.adoc[⬆️ TOC] /
+link:04f_mcp_integration.adoc[⬅️ MCP Integration] /
+link:05_bargaining.adoc[➡️ Ch4 — The Bargaining]
+

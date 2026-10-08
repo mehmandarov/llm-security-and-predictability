@@ -23,5 +23,5 @@ _"Either way, the math is done by Java. The LLM just decides what to compute."_
 
 link:toc.adoc[⬆️ TOC] /
 link:04d_code_execution.adoc[⬅️ Code Execution] /
-link:05_bargaining.adoc[➡️ Ch4 — The Bargaining]
+link:04f_mcp_integration.adoc[➡️ MCP Integration]
 
