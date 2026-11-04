@@ -28,7 +28,7 @@
         <assertj.version>3.27.7</assertj.version>
 
         <!-- Maven plugins -->
-        <maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.6.0</maven-failsafe-plugin.version>
     </properties>
 
